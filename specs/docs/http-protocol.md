@@ -1,0 +1,2212 @@
+> Full SurrealDB documentation index: https://surrealdb.com/docs/llms.txt
+
+# HTTP protocol
+
+The HTTP endpoints enable selection and modification of data, along with custom SurrealQL queries, using traditional RESTful HTTP endpoints.
+
+The HTTP endpoints exposed by SurrealDB instances provide a simple way to interact with the database over a traditional RESTful interface. This includes selecting and modifying one or more records, executing custom SurrealQL queries, and importing and exporting data.
+
+The endpoints are designed to be simple and easy to use in stateless environments, making them ideal for lightweight applications where a persistent database connection is not required.
+
+## Setup
+
+The [`surreal start`](/docs/reference/cli/surrealdb-cli/commands/start.md) command without any arguments is all that is needed to start a server at the default `http://localhost:8000` address. Many examples below assume the flags `--user root` and `--pass secret` to create a root user with the name `root` and password `secret`. The `--unauthenticated` flag can be used when experimenting to turn off authentication, effectively allowing root access by any and all connections.
+
+The [local database serving](/docs/explore/studio.md) functionality on the SurrealDB Studio can also be used to start a server.
+
+## Querying via Postman
+
+One convenient way to access these endpoints is via SurrealDB's Postman Collection. To do so, follow these steps:
+
+1. Open Postman
+2. Clone the [SurrealDB Postman Collection](https://postman.com/surrealdb/workspace/surrealdb/collection/19100500-3da237f3-588b-4252-8882-6d487c11116a)
+3. Select the appropriate HTTP method (`GET /health`, `DEL /key/:table`, etc.).
+4. Enter the endpoint URL.
+5. If the endpoint requires any parameters or a body, make sure to include those in your request.
+
+## Supported methods
+
+You can use the HTTP endpoints to perform the following actions:
+
+<br />
+
+<table>
+    <thead>
+        <tr>
+            <th scope="col">Function</th>
+            <th scope="col">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#status"><code>GET /status</code></a></td>
+            <td scope="row" data-label="Description">Checks whether the database web server is running</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#health"><code>GET /health</code></a></td>
+            <td scope="row" data-label="Description">Checks the status of the database server and storage engine</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#ready"><code>GET /ready</code></a></td>
+            <td scope="row" data-label="Description">Checks whether the instance has finished startup and is ready to serve traffic</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#version"><code>GET /version</code></a></td>
+            <td scope="row" data-label="Description">Returns the version of the SurrealDB database server</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#import"><code>POST /import</code></a></td>
+            <td scope="row" data-label="Description">Imports data into a specific Namespace and Database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#export"><code>POST /export</code></a></td>
+            <td scope="row" data-label="Description">Exports all data for a specific Namespace and Database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#signup"><code>POST /signup</code></a></td>
+            <td scope="row" data-label="Description">Signs-up as a record user using a specific record access method</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#signin"><code>POST /signin</code></a></td>
+            <td scope="row" data-label="Description">Signs-in as a root, namespace, database, or record user</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#get-table"><code>GET /key/:table</code></a></td>
+            <td scope="row" data-label="Description">Selects all records in a table from the database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#post-table"><code>POST /key/:table</code></a></td>
+            <td scope="row" data-label="Description">Creates a record in a table in the database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#put-table"><code>PUT /key/:table</code></a></td>
+            <td scope="row" data-label="Description">Updates all records in a table in the database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#patch-table"><code>PATCH /key/:table</code></a></td>
+            <td scope="row" data-label="Description">Modifies all records in a table in the database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#delete-table"><code>DELETE /key/:table</code></a></td>
+            <td scope="row" data-label="Description">Deletes all records in a table from the database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#get-record"><code>GET /key/:table/:id</code></a></td>
+            <td scope="row" data-label="Description">Selects the specific record from the database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#post-record"><code>POST /key/:table/:id</code></a></td>
+            <td scope="row" data-label="Description">Creates the specific record in the database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#put-record"><code>PUT /key/:table/:id</code></a></td>
+            <td scope="row" data-label="Description">Updates the specified record in the database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#patch-record"><code>PATCH /key/:table/:id</code></a></td>
+            <td scope="row" data-label="Description">Modifies the specified record in the database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#delete-record"><code>DELETE /key/:table/:id</code></a></td>
+            <td scope="row" data-label="Description">Deletes the specified record from the database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#sql"><code>POST /sql</code></a></td>
+            <td scope="row" data-label="Description">Allows custom SurrealQL queries</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#gql"><code>POST /gql</code></a></td>
+            <td scope="row" data-label="Description">Runs ISO GQL graph pattern queries (`MATCH … RETURN …`, plus `INSERT` / `SET` / `REMOVE` / `DELETE`)</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#graphql"><code>POST /graphql</code></a></td>
+            <td scope="row" data-label="Description">Allows custom GraphQL queries</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#ml-import"><code>POST /ml/import</code></a></td>
+            <td scope="row" data-label="Description">Import a SurrealML model into a specific Namespace and Database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#ml-export"><code>GET /ml/export/:name/:version</code></a></td>
+            <td scope="row" data-label="Description">Export a SurrealML model from a specific Namespace and Database</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#custom"><code>/api/:namespace/:database/:endpoint</code></a></td>
+            <td scope="row" data-label="Description">Create a custom API endpoint for any number of HTTP methods (GET, POST, etc.)</td>
+        </tr>
+    </tbody>
+</table>
+
+<br />
+
+## Request size limits
+
+Each endpoint caps the size of the request body it will accept. A request over the cap is rejected with `413 Payload Too Large`. The limits differ per endpoint because they are sized to the work each one does: `/sql` takes a query, `/import` takes a data file.
+
+The defaults are the same in 2.x and 3.x:
+
+| Endpoint | Default limit | Environment variable |
+| -------- | ------------- | -------------------- |
+| `POST /sql` | 1 MiB | `SURREAL_HTTP_MAX_SQL_BODY_SIZE` |
+| `POST /rpc` | 4 MiB | `SURREAL_HTTP_MAX_RPC_BODY_SIZE` |
+| `/api/:namespace/:database/:endpoint` | 4 MiB | `SURREAL_HTTP_MAX_API_BODY_SIZE` |
+| `POST /gql` | 1 MiB | `SURREAL_HTTP_MAX_GQL_BODY_SIZE` |
+| `/key` CRUD endpoints | 16 KiB | `SURREAL_HTTP_MAX_KEY_BODY_SIZE` |
+| `POST /signin` | 1 KiB | `SURREAL_HTTP_MAX_SIGNIN_BODY_SIZE` |
+| `POST /signup` | 1 KiB | `SURREAL_HTTP_MAX_SIGNUP_BODY_SIZE` |
+| `POST /import` | 4 GiB | `SURREAL_HTTP_MAX_IMPORT_BODY_SIZE` |
+| `POST /ml/import` | 4 GiB | `SURREAL_HTTP_MAX_ML_BODY_SIZE` |
+| `POST /mcp` _(since v3.1.0)_ | 4 MiB | `SURREAL_HTTP_MAX_MCP_BODY_SIZE` |
+
+The WebSocket `/rpc` endpoint is not bound by an HTTP body size. It allows up to 128 MiB per message (`SURREAL_WEBSOCKET_MAX_MESSAGE_SIZE`). As most SDKs use the WebSocket engine by default, they are able to send payloads that the plain HTTP endpoints reject. See [Message size limits](/docs/reference/rest-api/rpc-protocol.md#message-size-limits) for how the server ceiling interacts with the limit an SDK applies on its own side.
+
+### Choosing an endpoint for a large payload
+
+The 1 MiB ceiling that a large query runs into applies only to the raw HTTP `/sql` endpoint. Larger payloads have somewhere to go:
+
+* For ordinary queries, connect through a client SDK such as [Rust](/docs/reference/rust.md) or [JavaScript](/docs/reference/javascript.md). The WebSocket engine raises the per-message ceiling to 128 MiB.
+* To stay on plain HTTP, use [`POST /rpc`](/docs/reference/rest-api/rpc-protocol.md) for 4 MiB.
+* For bulk data loading, use [`POST /import`](#import), which accepts up to 4 GiB per request.
+
+### Tuning the limits
+
+Every limit above is set by an [environment variable](/docs/reference/cli/surrealdb-cli/environment-variables.md#http-server-config) on a self-hosted server. From 3.0 those variables accept byte-size suffixes such as `16MiB` or `4GB`; on 2.x they take a raw byte count.
+
+SurrealDB Cloud instances run the defaults listed above.
+
+<br />
+
+## `GET /status` {#status}
+
+This HTTP RESTful endpoint checks whether the database web server is running, returning a 200 status code.
+
+### Example usage
+
+```bash title="Request"
+curl -I http://localhost:8000/status
+```
+
+```bash title="Sample output"
+HTTP/1.1 200 OK
+vary: origin, access-control-request-method, access-control-request-headers
+access-control-allow-origin: *
+surreal-version: surrealdb/3.0.0
+server: SurrealDB
+x-request-id: fdb9bcdb-b085-4da0-80ef-a61105c432f9
+content-length: 0
+date: Tue, 03 Feb 2026 02:10:33 GMT
+```
+
+<br />
+
+## `GET /health` {#health}
+
+This HTTP RESTful endpoint checks whether the database server and storage engine are running.
+
+The endpoint returns a `200` status code on success and a `500` status code on failure.
+
+```bash title="Request"
+curl -I http://localhost:8000/health
+```
+
+```bash title="Sample output"
+HTTP/1.1 200 OK
+vary: origin, access-control-request-method, access-control-request-headers
+access-control-allow-origin: *
+surreal-version: surrealdb/3.0.0
+server: SurrealDB
+x-request-id: 66938ec2-ad7c-4afb-928d-683e7a75433a
+content-length: 0
+date: Tue, 03 Feb 2026 02:15:08 GMT
+```
+
+<br />
+
+## `GET /ready` {#ready}
+
+_(since v3.2.0)_
+
+This HTTP RESTful endpoint is the startup and readiness probe. It returns `200` once deferred startup work (such as import and credential initialisation) has completed and, when a heartbeat budget is configured, the node's cluster heartbeat is fresh. It returns `503` while still starting up or when the heartbeat is stale, and `500` if the heartbeat cannot be read.
+
+Contrast with [`GET /status`](#status) (process and listener liveness only) and [`GET /health`](#health) (storage backend reachability only). Query and auth endpoints are gated with `503` until startup completes, while `/ready` stays reachable throughout so orchestrators can distinguish *starting* from *failed*.
+
+The CLI [`surreal isready`](/docs/reference/cli/surrealdb-cli/commands/isready.md) command calls this endpoint.
+
+```bash title="Request"
+curl -I http://localhost:8000/ready
+```
+
+```bash title="Output (ready)"
+HTTP/1.1 200 OK
+vary: origin, access-control-request-method, access-control-request-headers
+access-control-allow-origin: *
+surreal-version: surrealdb/3.2.0
+server: SurrealDB
+content-length: 0
+```
+
+```bash title="Output (still starting)"
+HTTP/1.1 503 Service Unavailable
+retry-after: 1
+content-length: 0
+```
+
+<br />
+
+## `GET /version` {#version}
+
+This HTTP RESTful endpoint returns the version of the SurrealDB database server.
+
+### Example usage
+
+```bash title="Request"
+curl http://localhost:8000/version
+```
+
+```bash title="Sample output"
+surrealdb-3.0.0
+```
+
+<br />
+
+## `POST /import` {#import}
+
+This HTTP RESTful endpoint imports a set of SurrealQL queries into a specific namespace and database.
+
+The body is streamed: the server parses and applies statements as the bytes arrive rather than buffering the whole file. This is the endpoint to use for bulk data loading, since it accepts far more than [`/sql`](#sql) or [`/rpc`](/docs/reference/rest-api/rpc-protocol.md) do.
+
+### Size limit and partial imports
+
+The default cap is 4 GiB (`SURREAL_HTTP_MAX_IMPORT_BODY_SIZE`). Two details of how it is enforced matter when planning an import:
+
+* **The cap is cumulative for one request, not per chunk.** The limiter decrements a single allowance across every frame of the stream. A request whose `Content-Length` exceeds the cap is rejected immediately with `413`; a chunked request is accepted and then fails partway through, once the total bytes received cross the cap. Split larger datasets across several files rather than sending one oversized request. The gRPC import path enforces the same cumulative cap.
+* **A failed import is partially applied.** Statements are committed as they are parsed, so an import that trips the cap - or is interrupted for any other reason - leaves everything applied up to that point in place. There is no rollback.
+
+> [!IMPORTANT]
+> Because a failed import leaves partial data behind, plan for how you would retry. Either structure the file so that re-running it is safe, or import into a fresh namespace or database and swap it in once the import has finished successfully.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the root, namespace, or database authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Header">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Header">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Header">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Example usage
+
+> [!NOTE]
+> The `-u` in the example below is a shorthand used by curl to send an Authorization header (name and password), in this case assuming the username `root` and password `secret`.
+
+```bash title="Request"
+curl -X POST -u "root:secret" \
+  -H "Surreal-NS: main" \
+  -H "Surreal-DB: main" \
+  -H "Accept: application/json" \
+  -d file.surql \
+  http://localhost:8000/import
+```
+
+<br />
+
+## `POST /export` {#export}
+
+This HTTP RESTful endpoint exports all data for a specific Namespace and Database.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Header">
+                Sets the root, namespace, or database authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Header">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Header">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+#### Export options
+
+<table>
+    <thead>
+        <tr>
+            <th>Arguments</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                `only`
+                <label label="optional" />
+            </td>
+            <td>
+                Whether only specific resources should be exported. When provided, only the resources specified will be exported.
+            </td>
+        </tr>
+        <tr>
+            <td>
+                `users`
+                <label label="optional" />
+            </td>
+            <td>
+                Whether system users should be exported [possible values: true, false].
+            </td>
+        </tr>
+        <tr>
+            <td>
+                `accesses`
+                <label label="optional" />
+            </td>
+            <td>
+                Whether access methods (Record or JWT) should be exported [possible values: true, false]
+            </td>
+        </tr>
+        <tr>
+            <td>
+                `params`
+                <label label="optional" />
+            </td>
+            <td>
+                Whether databases parameters should be exported [possible values: true, false]
+            </td>
+        </tr>
+        <tr>
+            <td>
+                `functions`
+                <label label="optional" />
+            </td>
+            <td>
+                Whether functions should be exported [possible values: true, false]
+            </td>
+        </tr>
+        <tr>
+            <td>
+                `analyzers`
+                <label label="optional" />
+            </td>
+            <td>
+                Whether analyzers should be exported [possible values: true, false]
+            </td>
+        </tr>
+        <tr>
+            <td>
+                `tables [tables]`
+                <label label="optional" />
+            </td>
+            <td>
+                Whether tables should be exported, optionally providing a list of tables
+            </td>
+        </tr>
+        <tr>
+            <td>
+                `versions`
+                <label label="optional" />
+            </td>
+            <td>
+                Whether SurrealKV versioned records should be exported [possible values: true, false]
+            </td>
+        </tr>
+        <tr>
+            <td>
+                `records`
+                <label label="optional" />
+            </td>
+            <td>
+                Whether records should be exported [possible values: true, false]
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Example usage
+
+> [!NOTE]
+> The `-u` in the example below is a shorthand used by curl to send an Authorization header (name and password), in this case assuming the username `root` and password `secret`. The `-o` allows the output to be written to a file.
+
+```bash title="Request"
+curl -X GET \
+  -u "root:secret" \
+  -H "Surreal-NS: main" \
+  -H "Surreal-DB: main" \
+  -H "Accept: application/json" \
+  -o file.surql \
+  http://localhost:8000/export
+```
+
+```bash title="Exporting specific parameters"
+curl -X POST \
+  -u "root:secret" \
+  -H "Surreal-NS: main" \
+  -H "Surreal-DB: main" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -o file.surql \
+  -d '{
+        "users": true,
+        "accesses": false,
+        "params": false,
+        "functions": false,
+        "analyzers": false,
+        "versions": false,
+        "tables": ["usersTable", "ordersTable"],
+        "records": true
+      }' \
+  http://localhost:8000/export
+```
+
+<br />
+
+## `POST /signin` {#signin}
+
+```json title="Method and URL"
+POST /signin
+```
+
+This HTTP RESTful endpoint is used to access an existing account inside the SurrealDB database server.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+     <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                    <code>Accept</code>
+                    <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Data
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Data</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+    <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>ns</code>
+                <label label="required">REQUIRED FOR DB & RECORD</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                The namespace to sign in to this is required FOR DB & RECORD users
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>db</code>
+                <label label="required">REQUIRED FOR RECORD</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                The database to sign in to required for RECORD users
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>ac</code>
+                <label label="required">REQUIRED FOR RECORD USER</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                The record access method to use for signing in. required for RECORD users
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>user</code>
+                <label label="required">REQUIRED FOR ROOT, NS & DB</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            The username of the database user required for ROOT, NS & DB users
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>pass</code>
+                <label label="required">REQUIRED FOR ROOT, NS & DB</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            The password of the database user required for ROOT, NS & DB users
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+> [!IMPORTANT]
+> The `ac` parameter is only required if you are signing in using an [access method](/docs/reference/query-language/statements/define/access.md) as a record user. For system users on the database, namespace, and root level, this parameter can be omitted.
+
+### Example with a record user
+
+The following example will work as long as as an access method has been defined and a record user has been signed up using the [`/signup`](#signup) endpoint.
+
+```bash title="Request"
+curl -X POST -H "Accept: application/json" -d '{"ns":"main","db":"main","ac":"users","user":"johndoe","pass":"123456"}' http://localhost:8000/signin
+```
+
+```json title="Response"
+{
+	"code": 200,
+	"details": "Authentication succeeded",
+	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+}
+```
+
+### Example with root user
+
+```bash title="Request"
+curl -X POST -H "Accept: application/json" -d '{"user":"root","pass":"secret"}' http://localhost:8000/signin
+```
+
+```json title="Response"
+{
+	"code": 200,
+	"details": "Authentication succeeded",
+	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+}
+```
+
+### Example with namespace user
+
+To create the namespace user needed for the following query, use the following command.
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" \
+  -H "Accept: application/json"
+  -d 'DEFINE USER johndoe ON NAMESPACE PASSWORD "123456" ROLES EDITOR' http://localhost:8000/sql
+```
+
+Once the user has been created, use this command to sign in.
+
+```bash title="Request"
+curl -X POST -H "Accept: application/json" -d '{"ns":"main","user":"johndoe","pass":"123456"}' http://localhost:8000/signin
+```
+
+```json title="Response"
+{
+	"code": 200,
+	"details": "Authentication succeeded",
+	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+}
+```
+
+### Example usage via postman
+
+After you have defined the users permissions for the record user, you can use the `POST /signin` endpoint to sign in as a user.
+
+Using the [user credentials](/docs/learn/security/authentication/users.md#record-users) created add the following to the request body:
+```json
+{
+    "ns": "main",
+    "db": "main",
+    "ac": "account",
+    "email": "",
+    "pass": "123456"
+}
+```
+
+<br />
+
+## `POST /signup` {#signup}
+
+This HTTP RESTful endpoint is used to create an account inside the SurrealDB database server.
+
+### Header
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Data
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Data</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>ns</code>
+                <label label="required"></label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                The namespace to sign up to. This data is `REQUIRED FOR DB & RECORD`
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>db</code>
+                <label label="required"></label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                The database to sign up to. This data is `REQUIRED FOR RECORD`
+            </td>
+        </tr>
+                <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>access</code>
+                <label label="required"></label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                The record access method to use for signing up. This data is `REQUIRED FOR RECORD`
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>user</code>
+                <label label="required"></label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            The username of the database user. This data is `REQUIRED FOR ROOT, NS & DB`
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>pass</code>
+                <label label="required"></label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            The password of the database user. This data is `REQUIRED FOR ROOT, NS & DB`
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Example usage
+
+```bash title="Request"
+curl -X POST -H "Accept: application/json" -d '{"ns":"main","db":"main","ac":"users","user":"johndoe","pass":"123456"}' http://localhost:8000/signup
+```
+
+```json title="Response"
+{
+	"code": 200,
+	"details": "Authentication succeeded",
+	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+}
+```
+
+The above example will only work if a record access method has already been set up.
+
+### Setting up a record access method
+
+Before you sign up a new [record user](/docs/learn/security/authentication/users.md#record-users), you must first [define a record access method](/docs/reference/query-language/statements/define/access/record.md) for the user. The following curl command will do so on the command line using the [`POST /sql`](#sql) endpoint.
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" \
+  -H "Accept: application/json"
+  -d 'DEFINE ACCESS users ON DATABASE TYPE RECORD
+    SIGNUP ( CREATE user SET email = $email, pass = crypto::argon2::generate($pass) )
+    SIGNIN ( SELECT * FROM user WHERE email = $email AND crypto::argon2::compare(pass, $pass) )
+    DURATION FOR SESSION 24h' http://localhost:8000/sql
+```
+
+To do the same using Postman, use the following steps:
+
+1. Navigate to the `POST /sql` endpoint in Postman.
+2. Enter the following query in the body of the request:
+```surql
+-- Enable authentication directly against a SurrealDB record
+DEFINE ACCESS users ON DATABASE TYPE RECORD
+    SIGNUP ( CREATE user SET email = $email, pass = crypto::argon2::generate($pass) )
+    SIGNIN ( SELECT * FROM user WHERE email = $email
+      AND crypto::argon2::compare(pass, $pass) )
+    DURATION FOR SESSION 24h
+;
+```
+
+The above query defines a record access method called `account` that allows users to sign up and sign in. The access method also defines the session duration to be 24 hours.
+
+3. Click `Send` to send the request to the SurrealDB database server.
+4. Navigate to the `POST /signup` endpoint in Postman.
+5. Enter the following query in the body of the request:
+
+```json
+{
+    "ns": "main",
+    "db": "main",
+    "ac": "users",
+    "email": "",
+    "pass": "123456"
+}
+```
+6. In the header of the request, set the following key-value pairs:
+    - `Accept: application/json`
+    - namespace: `test`
+    - database: `test`
+    - access: `account`
+6. Click `Send` to send the request to the SurrealDB database server. You will receive the following response.
+
+```json
+{
+    "code": 200,
+    "details": "Authentication succeeded",
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE3MDY2MTA4MDMsIm5iZiI6MTcwNjYxMDgwMywiZXhwIjoxNzA2Njk3MjAzLCJpc3MiOiJTdXJyZWFsREIiLCJOUyI6InRlc3QiLCJEQiI6InRlc3QiLCJBQyI6Imh1bWFuIiwiSUQiOiJ1c2VyOjZsOTl1OWI0bzVoa3h0NnY3c3NzIn0.3jR8PHgS8iLefZDuPHBFcdUFNfuB3OBNqQtqxLVVzxAIxVj1RAkD5rCEZHH2QaPV-D2zNwYO5Fh_a8jD1l_cqQ"
+}
+```
+
+<br />
+
+## `GET /key/:table` {#get-table}
+
+This HTTP RESTful endpoint selects all records in a specific table in the database.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Translated query
+```surql
+SELECT * FROM type::table($table);
+```
+
+### Example usage
+
+```bash
+curl -X GET -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" http://localhost:8000/key/person
+```
+
+<br/>
+
+## `POST /key/:table` {#post-table}
+
+This HTTP RESTful endpoint creates a record in a specific table in the database.
+
+> [!NOTE]
+> This HTTP endpoint expects the HTTP body to be a **single inert value** (parsed with the SurrealQL value grammar and bound to **`$data`** in the translated statement). Literals, `$param` references, and constants are allowed; function calls, statements, and parenthesised executable forms are rejected. The body is not executed as a script. Use [`/sql`](/docs/reference/rest-api/http-protocol.md#sql) or RPC when you need to run queries in the request body. JSON-shaped objects such as `{ name: "Billy" }` are valid SurrealQL values and are the usual choice on the wire.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Translated query
+```surql
+CREATE type::table($table) CONTENT $data;
+```
+
+### Example usage
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ name: "Billy" }' http://localhost:8000/key/person
+```
+
+```json title="Response"
+[
+	{
+		"result": [
+			{
+				"id": "person:sf8l6ejkm6swdwoyx2mt",
+				"name": "Billy"
+			}
+		],
+		"status": "OK",
+		"time": "160.375µs",
+		"type": null
+	}
+]
+```
+
+<br />
+
+## `PUT /key/:table` {#put-table}
+
+This HTTP RESTful endpoint updates all records in a specific table in the database.
+
+> [!NOTE]
+> This HTTP endpoint expects the HTTP body to be a **single inert value** (SurrealQL literal / object syntax; not an executable statement). Use [`/sql`](/docs/reference/rest-api/http-protocol.md#sql) or RPC to run SurrealQL in the request body.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Translated query
+```surql
+UPDATE type::table($table) CONTENT $data;
+```
+
+### Example usage
+
+To use this example, first create a record using the `POST` endpoint:
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ name: "Billy" }' http://localhost:8000/key/person
+```
+
+Then use this `PUT` endpoint to modify the existing record.
+
+```bash
+curl -X PUT -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ name: "Not Billy anymore" }' http://localhost:8000/key/person
+```
+
+```json title="Response"
+[
+	{
+		"result": [
+			{
+				"id": "person:f8i2ej4xluh5dgw2lgko",
+				"name": "Not Billy anymore"
+			}
+		],
+		"status": "OK",
+		"time": "109.458µs",
+		"type": null
+	}
+]
+```
+
+<br />
+
+## `PATCH /key/:table` {#patch-table}
+
+This HTTP RESTful endpoint modifies all records in a specific table in the database.
+
+> [!NOTE]
+> This HTTP endpoint expects the HTTP body to be a **single inert value** (SurrealQL literal / object syntax; not an executable statement). Use [`/sql`](/docs/reference/rest-api/http-protocol.md#sql) or RPC to run SurrealQL in the request body.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Translated query
+```surql
+UPDATE type::table($table) MERGE $data;
+```
+
+### Example usage
+
+To use this example, first create a record using the `POST` endpoint:
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ id: person:one, name: "Billy" }' http://localhost:8000/key/person
+```
+
+Then use this `PATCH` endpoint to modify the existing records.
+
+```bash
+curl -X PATCH -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ "name": "Not Billy anymore" }' http://localhost:8000/key/person
+```
+
+```json title="Response"
+[
+	{
+		"result": [
+			{
+				"id": "person:one",
+				"name": "Not Billy anymore"
+			}
+		],
+		"status": "OK",
+		"time": "162.167µs",
+		"type": null
+	}
+]
+```
+
+<br />
+
+## `DELETE /key/:table` {#delete-table}
+
+This HTTP RESTful endpoint deletes all records from the specified table in the database.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Translated query
+```surql
+DELETE FROM type::table($table) RETURN BEFORE;
+```
+
+### Example usage
+
+To use this example, first create a record using the `POST` endpoint:
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ id: person:one, name: "Billy" }' http://localhost:8000/key/person
+```
+
+Then use this `DELETE` endpoint to delete and return the records that were just removed.
+
+```bash
+curl -X DELETE -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" http://localhost:8000/key/person
+```
+
+```json title="Response"
+[
+	{
+		"result": [
+			{
+				"id": "person:one",
+				"name": "Billy"
+			}
+		],
+		"status": "OK",
+		"time": "234.75µs",
+		"type": null
+	}
+]
+```
+
+<br />
+
+## `GET /key/:table/:id` {#get-record}
+
+This HTTP RESTful endpoint selects a specific record from the database.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Translated query
+
+```surql
+SELECT * FROM type::record($table, $id);
+```
+
+<br />
+
+### Example usage
+
+```bash
+curl -X GET -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" http://localhost:8000/key/person/1
+```
+
+<br/>
+
+## `POST /key/:table/:id` {#post-record}
+
+This HTTP RESTful endpoint creates a specific record in a table in the database.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Translated query
+
+```surql
+CREATE type::record($table, $id) CONTENT $data;
+```
+
+<br />
+
+### Example usage
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ name: "Billy" }' http://localhost:8000/key/person/1
+```
+
+```json title="Response"
+[
+	{
+		"result": [
+			{
+				"id": "person:1",
+				"name": "Billy"
+			}
+		],
+		"status": "OK",
+		"time": "103.542µs",
+		"type": null
+	}
+]
+```
+
+## `PUT /key/:table/:id` {#put-record}
+
+This HTTP RESTful endpoint updates a specific record in a table in the database.
+
+> [!NOTE]
+> This HTTP endpoint expects the HTTP body to be a **single inert value** (SurrealQL literal / object syntax; not an executable statement). Use [`/sql`](/docs/reference/rest-api/http-protocol.md#sql) or RPC to run SurrealQL in the request body.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Translated query
+
+```surql
+UPDATE type::record($table, $id) CONTENT $data;
+```
+
+<br />
+
+## `PATCH /key/:table/:id` {#patch-record}
+
+This HTTP RESTful endpoint modifies a specific record in a table in the database.
+
+> [!NOTE]
+> This HTTP endpoint expects the HTTP body to be a **single inert value** (SurrealQL literal / object syntax; not an executable statement). Use [`/sql`](/docs/reference/rest-api/http-protocol.md#sql) or RPC to run SurrealQL in the request body.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Translated query
+
+```surql
+UPDATE type::record($table, $id) MERGE $data;
+```
+
+<br />
+
+### Example usage
+
+To use this example, first create a record using the `POST` endpoint:
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ name: "Billy" }' http://localhost:8000/key/person/1
+```
+
+### Example usage
+
+To use this example, first create a record using the `POST` endpoint:
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ id: person:one, name: "Billy" }' http://localhost:8000/key/person
+```
+
+Then use this `PATCH` endpoint to modify the existing record.
+
+```bash
+curl -X PATCH -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ "name": "Not Billy anymore" }' http://localhost:8000/key/person/1
+```
+
+```json title="Response"
+[
+	{
+		"result": [
+			{
+				"id": "person:one",
+				"name": "Not Billy anymore"
+			}
+		],
+		"status": "OK",
+		"time": "162.167µs",
+		"type": null
+	}
+]
+```
+
+<br/>
+
+## `DELETE /key/:table/:id` {#delete-record}
+
+This HTTP RESTful endpoint deletes a single specific record from the database.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Translated query
+
+```surql
+DELETE FROM type::record($table, $id) RETURN BEFORE;
+```
+
+<br />
+
+### Example usage
+
+To use this example, first create a record using the `POST` endpoint:
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d '{ id: person:one, name: "Billy" }' http://localhost:8000/key/person/1
+```
+
+Then use this `DELETE` endpoint to delete and return the record that was just removed.
+
+```bash
+curl -X DELETE -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" http://localhost:8000/key/person/1
+```
+
+```json title="Response"
+[
+	{
+		"result": [
+			{
+				"id": "person:one",
+				"name": "Billy"
+			}
+		],
+		"status": "OK",
+		"time": "145.042µs",
+		"type": null
+	}
+]
+```
+
+<br/>
+
+## `POST /sql` {#sql}
+
+The SQL endpoint enables use of SurrealQL queries.
+
+> [!NOTE]
+> This HTTP endpoint expects the HTTP body to be a set of SurrealQL statements.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Parameters
+
+Query parameters can be provided via URL query parameters. These parameters will securely replace any parameters that are present in the query. This practise is known as prepared statements or parameterised queries, and [should be used](/docs/learn/security/best-practices/security-best-practices.md#query-safety) whenever untrusted inputs are included in a query to prevent injection attacks.
+
+### Example usage
+
+> [!NOTE]
+> The `-u` in the example below is a shorthand used by curl to send an Authorization header (name and password), in this case assuming the username `root` and password `secret`.
+
+**V2.x+**
+
+```bash title="Request"
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" \
+  -H "Accept: application/json"
+  -d 'SELECT * FROM person WHERE age > $age' http://localhost:8000/sql?age=18
+```
+
+**V2.x with token**
+
+```bash title="Request"
+curl -X POST -H "Bearer: YourToken" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" \
+  -d 'SELECT * FROM person WHERE age > $age' http://localhost:8000/sql?age=18
+```
+
+```json title="Response"
+[
+	{
+		"time": "14.357166ms",
+		"status": "OK",
+		"result": [
+			{
+				"age": "23",
+				"id": "person:6r7wif0uufrp22h0jr0o"
+				"name": "Simon",
+			},
+			{
+				"age": "28",
+				"id": "person:6r7wif0uufrp22h0jr0o"
+				"name": "Marcus",
+			},
+		]
+	}
+]
+```
+
+### Usage in importing data
+
+_(since v3.0.4)_
+
+As of SurrealDB 3.0.4, imports via the [`surreal import`](/docs/reference/cli/surrealdb-cli/commands/import.md) and [`/import`](#import) HTTP endpoint require the automatically generated `OPTION IMPORT` line to be present in order to disable events, live queries, field processing, and result output for optimal import performance. If side effects are desired when importing data, remove the line and use this endpoint instead.
+
+<br />
+
+## `POST /gql` {#gql}
+
+_(since v3.2.0)_
+
+The GQL endpoint runs [ISO GQL](/docs/learn/querying/gql/overview.md) graph pattern queries against your existing tables and `RELATE` edges - `MATCH … RETURN` reads and data-modifying `INSERT`, `SET`, `REMOVE`, and `DELETE` ([GQL mutations](/docs/learn/querying/gql/mutations.md)).
+
+> [!NOTE]
+> From **3.3.0**, GQL is enabled by default - no experimental capability is required. On **3.2.x**, enable it with [`--allow-experimental gql`](/docs/reference/cli/surrealdb-cli/commands/start.md#experimental-capabilities) (or `SURREAL_CAPS_ALLOW_EXPERIMENTAL=gql`). `--allow-all` does not enable experimental capabilities on 3.2.x.
+
+> [!NOTE]
+> This endpoint is **not** [GraphQL](/docs/learn/querying/graphql/overview.md). GraphQL queries belong on [`POST /graphql`](#graphql).
+
+> [!NOTE]
+> This HTTP endpoint expects the HTTP body to be a **single raw GQL query** (UTF-8 text), not JSON-wrapped. Use [`POST /sql`](#sql) for SurrealQL.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response (`application/json` or `application/cbor`)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Parameters
+
+Pass GQL parameters through **WebSocket RPC** (`method: "gql"`, second element of `params` as a JSON object with typed values).
+
+### Example usage
+
+> [!NOTE]
+> The `-u` in the example below is a shorthand used by curl to send an Authorization header (name and password), in this case assuming the username `root` and password `secret`.
+
+```bash title="Request"
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" \
+  -H "Accept: application/json" -H "Content-Type: text/plain" \
+  -d 'MATCH (n:person) RETURN n.name AS name ORDER BY name' \
+  http://localhost:8000/gql
+```
+
+```json title="Response"
+[
+	{
+		"status": "OK",
+		"result": [
+			{ "name": "A" },
+			{ "name": "B" },
+			{ "name": "C" }
+		],
+		"time": "1.5ms"
+	}
+]
+```
+
+Parse errors return **HTTP 400** with an error payload. See [GQL via HTTP](/docs/learn/querying/gql/via-http.md) for enabling GQL, seeding data, and RPC examples.
+
+<br />
+
+## `POST /graphql` {#graphql}
+
+The GraphQL endpoint enables use of GraphQL queries to interact with your data.
+
+> [!NOTE]
+> This endpoint is **not** [ISO GQL](/docs/learn/querying/gql/overview.md). GQL `MATCH` queries belong on [`POST /gql`](#gql).
+
+> [!NOTE]
+> This HTTP endpoint expects the HTTP body to be a GraphQL query.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Accept</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the desired content-type of the response
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Example usage
+
+> [!NOTE]
+> The `-u` in the example below is a shorthand used by curl to send an Authorization header (name and password), in this case assuming the username `root` and password `secret`.
+
+First, use the `/sql` endpoint to send in a [`DEFINE CONFIG`](/docs/reference/query-language/statements/define/config.md#define-config-graphql) statement to set the database up to use GraphQL.
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" \
+  -H "Accept: application/json"
+  -d 'DEFINE TABLE person SCHEMAFULL; DEFINE FIELD name ON TABLE person TYPE string; DEFINE FIELD age ON TABLE person TYPE number;' \
+  http://localhost:8000/sql
+
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" \
+  -H "Accept: application/json"
+  -d 'CREATE person:simon SET name = "Simon", age = 23; CREATE person:marcus SET name = "Marcus", age = 28;' \
+  http://localhost:8000/sql
+
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" \
+  -H "Accept: application/json"
+  -d 'DEFINE CONFIG GRAPHQL AUTO' \
+  http://localhost:8000/sql
+```
+
+With that done, a GraphQL query can now be performed.
+
+```bash title="Request"
+curl -X POST \
+  -u "root:secret" \
+  -H "Surreal-NS: main" \
+  -H "Surreal-DB: main" \
+  -H "Accept: application/json" \
+  -d '{"query": "query { person { id name age } }"}' \
+  http://localhost:8000/graphql
+```
+
+```json title="Response"
+{
+	"data": {
+		"person": [
+			{
+				"age": 28,
+				"id": "person:marcus",
+				"name": "Marcus"
+			},
+			{
+				"age": 23,
+				"id": "person:simon",
+				"name": "Simon"
+			}
+		]
+	}
+}
+```
+
+<br />
+
+## `POST /ml/import` {#ml-import}
+
+This HTTP RESTful endpoint imports a SurrealML machine learning model into a specific Namespace and Database. It expects the file to be a SurrealML file packaged in the `.surml` file format. As machine learning files can be large, the endpoint expects a chunked HTTP request.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+            Sets the root, namespace, database, or record authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Example usage
+
+> [!NOTE]
+> The `-u` in the example below is a shorthand used by curl to send an Authorization header (name and password), in this case assuming the username `root` and password `secret`.
+
+```bash title="Request"
+curl -X POST \
+  -u "root:secret" \
+  -H "Surreal-NS: main" \
+  -H "Surreal-DB: main" \
+  -H "Accept: application/json" \
+  -d file.surml \
+  http://localhost:8000/ml/import
+```
+
+### Usage in Python
+
+When using Python, the [surreaml](https://github.com/surrealdb/surrealml) package can be used to upload the model with the following code:
+
+```python
+from surrealml import SurMlFile
+
+url = "http://0.0.0.0:8000/ml/import"
+SurMlFile.upload("./linear_test.surml", url, 5)
+```
+
+<br />
+
+## `GET /ml/export/:name/:version` {#ml-export}
+
+This HTTP RESTful endpoint exports a SurrealML machine learning model from a specific Namespace and Database. The output file with be a SurrealML file packaged in the `.surml` file format. As machine learning files can be large, the endpoint outputs a chunked HTTP response.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the root, namespace, or database authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Example usage
+
+> [!NOTE]
+> The `-u` in the example below is a shorthand used by curl to send an Authorization header (name and password), in this case assuming the username `root` and password `secret`. The `-o` allows the output to be written to a file.
+
+```bash title="Request"
+curl -X GET \
+  -u "root:secret" \
+  -H "Surreal-NS: main" \
+  -H "Surreal-DB: main" \
+  -H "Accept: application/json" \
+  -o file.surml \
+  http://localhost:8000/ml/export/prediction/1.0.0
+```
+
+## Custom endpoint at `/api/:ns/:db/:endpoint` {#custom}
+
+_(since v2.2.0)_
+
+A custom endpoint can be set using a [`DEFINE API`](/docs/reference/query-language/statements/define/api.md) statement. The possible HTTP methods (GET, PUT, etc.) are set using the statement itself. The path begins with `/api`, continues with the namespace and database, and ends with a custom endpoint that can include both static and dynamic path segments.
+
+### Headers
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Header</th>
+            <th colspan="2">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Authorization</code>
+                <label label="optional">OPTIONAL</label>
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the root, namespace, or database authentication data
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-NS</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Namespace for queries.
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" scope="row" data-label="Header">
+                <code>Surreal-DB</code>
+                <label label="required" />
+            </td>
+            <td colspan="2" scope="row" data-label="Description">
+                Sets the selected Database for queries.
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### Example usage
+
+To begin, start a server with the `surreal start` command.
+
+```bash
+surreal start --user root --pass secret
+```
+
+A custom endpoint can first be set up using a `DEFINE API` statement via the `/sql` endpoint.
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" -d 'DEFINE API "/custom_response" FOR get MIDDLEWARE api::res::body("json") THEN { { status: 200, body: { some: "info" } } }' http://localhost:8000/sql
+```
+
+Once this is set up, a simple curl command to the endpoint will suffice to see the response.
+
+```bash title="Request"
+curl http://localhost:8000/api/main/main/custom_response -H "Surreal-NS: ns" -H "Surreal-DB: db" -H "Accept: application/json"
+```
+
+```json title="Response"
+{"some":"info"}
+```
