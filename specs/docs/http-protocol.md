@@ -116,7 +116,7 @@ You can use the HTTP endpoints to perform the following actions:
         </tr>
         <tr>
             <td scope="row" data-label="Function"><a href="#gql"><code>POST /gql</code></a></td>
-            <td scope="row" data-label="Description">Runs ISO GQL graph pattern queries (`MATCH … RETURN …`, plus `INSERT` / `SET` / `REMOVE` / `DELETE`)</td>
+            <td scope="row" data-label="Description">Runs ISO GQL (Cypher Query Language) graph pattern queries (`MATCH … RETURN …`, plus `INSERT` / `SET` / `REMOVE` / `DELETE`)</td>
         </tr>
         <tr>
             <td scope="row" data-label="Function"><a href="#graphql"><code>POST /graphql</code></a></td>
@@ -1842,7 +1842,7 @@ As of SurrealDB 3.0.4, imports via the [`surreal import`](/docs/reference/cli/su
 
 _(since v3.2.0)_
 
-The GQL endpoint runs [ISO GQL](/docs/learn/querying/gql/overview.md) graph pattern queries against your existing tables and `RELATE` edges - `MATCH … RETURN` reads and data-modifying `INSERT`, `SET`, `REMOVE`, and `DELETE` ([GQL mutations](/docs/learn/querying/gql/mutations.md)).
+The GQL endpoint runs [ISO GQL (Cypher Query Language)](/docs/learn/querying/gql/overview.md) graph pattern queries against your existing tables and `RELATE` edges - `MATCH … RETURN` reads and data-modifying `INSERT`, `SET`, `REMOVE`, and `DELETE` ([GQL mutations](/docs/learn/querying/gql/mutations.md)).
 
 > [!NOTE]
 > From **3.3.0**, GQL is enabled by default - no experimental capability is required. On **3.2.x**, enable it with [`--allow-experimental gql`](/docs/reference/cli/surrealdb-cli/commands/start.md#experimental-capabilities) (or `SURREAL_CAPS_ALLOW_EXPERIMENTAL=gql`). `--allow-all` does not enable experimental capabilities on 3.2.x.
@@ -1941,7 +1941,7 @@ Parse errors return **HTTP 400** with an error payload. See [GQL via HTTP](/docs
 The GraphQL endpoint enables use of GraphQL queries to interact with your data.
 
 > [!NOTE]
-> This endpoint is **not** [ISO GQL](/docs/learn/querying/gql/overview.md). GQL `MATCH` queries belong on [`POST /gql`](#gql).
+> This endpoint is **not** [ISO GQL (Cypher Query Language)](/docs/learn/querying/gql/overview.md). GQL `MATCH` queries belong on [`POST /gql`](#gql).
 
 > [!NOTE]
 > This HTTP endpoint expects the HTTP body to be a GraphQL query.
