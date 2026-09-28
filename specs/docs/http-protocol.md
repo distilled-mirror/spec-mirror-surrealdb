@@ -2,7 +2,7 @@
 
 # HTTP protocol
 
-The HTTP endpoints enable selection and modification of data, along with custom SurrealQL queries, using traditional RESTful HTTP endpoints.
+Query and modify data over plain HTTP endpoints.
 
 The HTTP endpoints exposed by SurrealDB instances provide a simple way to interact with the database over a traditional RESTful interface. This includes selecting and modifying one or more records, executing custom SurrealQL queries, and importing and exporting data.
 
