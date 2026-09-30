@@ -240,6 +240,7 @@ Working notes:
 - [surrealctl](https://surrealdb.com/docs/manage/surrealctl): What the surrealctl control-plane CLI does.
 - [Enterprise members](https://surrealdb.com/docs/manage/enterprise/members)
 - [Enterprise roles & permissions](https://surrealdb.com/docs/manage/enterprise/roles)
+- [SCIM provisioning](https://surrealdb.com/docs/manage/enterprise/scim-provisioning)
 - [Single sign-on](https://surrealdb.com/docs/manage/enterprise/single-sign-on)
 - [Architecture](https://surrealdb.com/docs/manage/instances/architecture)
 - [Backups and recovery](https://surrealdb.com/docs/manage/instances/backups)
@@ -285,7 +286,6 @@ Working notes:
 - [Backups & recovery](https://surrealdb.com/docs/manage/self-hosted/backups-and-recovery)
 - [Configuration](https://surrealdb.com/docs/manage/self-hosted/configuration)
 - [Deployment models](https://surrealdb.com/docs/manage/self-hosted/deployment-models)
-- [Docker](https://surrealdb.com/docs/manage/self-hosted/docker)
 - [Kubernetes](https://surrealdb.com/docs/manage/self-hosted/kubernetes)
 - [Managed Kubernetes](https://surrealdb.com/docs/manage/self-hosted/managed-kubernetes)
 - [Monitoring & observability](https://surrealdb.com/docs/manage/self-hosted/monitoring-and-observability)
@@ -321,8 +321,8 @@ Working notes:
 - [Introduction](https://surrealdb.com/docs/explore/ml-models): SurrealML runs trained ML models in SurrealDB: train in Python.
 - [Introduction](https://surrealdb.com/docs/explore/studio): SurrealDB Studio is the official visual interface for SurrealDB.
 - [Demos and tutorials](https://surrealdb.com/docs/explore/tutorials): Hands-on demo applications and tutorials.
-- [Search and shortcuts](https://surrealdb.com/docs/explore/studio/search-and-shortcuts): The SurrealDB Studio command palette and its keyboard shortcuts.
-- [SurrealQL editors](https://surrealdb.com/docs/explore/studio/surrealql-editors)
+- [Search and shortcuts](https://surrealdb.com/docs/explore/studio/search-and-shortcuts)
+- [SurrealQL editors](https://surrealdb.com/docs/explore/studio/surrealql-editors): SurrealQL editor shortcuts in SurrealDB Studio.
 - [Computation](https://surrealdb.com/docs/explore/ml-models/surrealml/computation)
 - [Storage](https://surrealdb.com/docs/explore/ml-models/surrealml/storage)
 - [Kai G AI demos](https://surrealdb.com/docs/explore/tutorials/demos/kaig-ai-demos)
