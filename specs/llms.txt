@@ -171,8 +171,8 @@ Working notes:
 - [Migrating to SurrealDB](https://surrealdb.com/docs/build/migrating): Moving data into SurrealDB from other databases, or older releases.
 - [Agent Skills](https://surrealdb.com/docs/build/ai-agents/agent-skills): Official SurrealDB agent skills for use in agentic coding workflows.
 - [SurrealDB MCP Server](https://surrealdb.com/docs/build/ai-agents/mcp): Connect Claude, Cursor, and other AI tools to SurrealDB Cloud.
-- [Storage engines](https://surrealdb.com/docs/build/embedding/storage-engines): What a storage engine does for SurrealDB.
-- [Agent rules](https://surrealdb.com/docs/build/integrations/agent-rules): Agent rules for working with SurrealDB.
+- [Storage engines](https://surrealdb.com/docs/build/embedding/storage-engines)
+- [Agent rules](https://surrealdb.com/docs/build/integrations/agent-rules)
 - [Migrating](https://surrealdb.com/docs/build/migrating/from-files-and-streams)
 - [MCP in Claude](https://surrealdb.com/docs/build/ai-agents/mcp/claude)
 - [MCP in Cursor](https://surrealdb.com/docs/build/ai-agents/mcp/cursor)
@@ -1007,9 +1007,10 @@ Working notes:
 - [Stateful workflows](https://surrealdb.com/docs/agent-memory/cookbooks/patterns/stateful-workflows)
 - [User memory in chat](https://surrealdb.com/docs/agent-memory/cookbooks/patterns/user-memory-in-chat)
 - [Calgary 1912-1913 explorer](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/calgary)
-- [Domesday: South Erpingham, 1086](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/domesday)
+- [The Domesday Book, 1086](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/domesday)
 - [Pompeii election notices](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/pompeii)
 - [Robin Hood character graph](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/robin-hood)
+- [Vulcan, Alberta: an article's history](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/vulcan)
 - [Bulk import](https://surrealdb.com/docs/agent-memory/ingest/authoritative/bulk-import)
 - [Structured fact ingest](https://surrealdb.com/docs/agent-memory/ingest/authoritative/knowledge-nodes)
 - [Multimodal content](https://surrealdb.com/docs/agent-memory/ingest/authoritative/multimodal-content)
