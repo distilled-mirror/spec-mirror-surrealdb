@@ -398,6 +398,7 @@ Working notes:
 - [SurrealDB CLI commands](https://surrealdb.com/docs/reference/cli/surrealdb-cli/commands)
 - [Environment variables](https://surrealdb.com/docs/reference/cli/surrealdb-cli/environment-variables): Every SURREAL_ variable, with its default and allowed values.
 - [SurrealDB CLI](https://surrealdb.com/docs/reference/cli/surrealdb-cli/overview)
+- [Environment variables and flags by version](https://surrealdb.com/docs/reference/cli/surrealdb-cli/version-history)
 - [Handle authentication](https://surrealdb.com/docs/reference/dotnet/core/authentication)
 - [Connection strings](https://surrealdb.com/docs/reference/dotnet/core/connection-strings)
 - [Create a new connection](https://surrealdb.com/docs/reference/dotnet/core/create-a-new-connection)
@@ -981,9 +982,9 @@ Working notes:
 - [Recalling memories](https://surrealdb.com/docs/agent-memory/retrieve/recall): Unified retrieval over facts and document passages.
 - [Adding turns](https://surrealdb.com/docs/agent-memory/sessions/adding-turns): How to add conversation turns.
 - [Chat sessions](https://surrealdb.com/docs/agent-memory/sessions/chat-sessions): Using chat() for conversation loops managed by SurrealDB Agent Memory.
-- [Creating sessions](https://surrealdb.com/docs/agent-memory/sessions/creating-sessions): How to create and manage conversation sessions.
-- [State and diffs](https://surrealdb.com/docs/agent-memory/sessions/state-and-diffs): Reading structured memory state.
-- [Caching and invalidation](https://surrealdb.com/docs/agent-memory/tuning/caching-and-invalidation): How the semantic response cache works.
+- [Creating sessions](https://surrealdb.com/docs/agent-memory/sessions/creating-sessions)
+- [State and diffs](https://surrealdb.com/docs/agent-memory/sessions/state-and-diffs)
+- [Caching and invalidation](https://surrealdb.com/docs/agent-memory/tuning/caching-and-invalidation)
 - [Models per stage](https://surrealdb.com/docs/agent-memory/tuning/models-per-stage)
 - [Extraction vocabulary](https://surrealdb.com/docs/agent-memory/tuning/ontology-grounding)
 - [The accuracy promise](https://surrealdb.com/docs/agent-memory/welcome/accuracy-promise)
