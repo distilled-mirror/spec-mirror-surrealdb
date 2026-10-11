@@ -485,6 +485,7 @@ Working notes:
 - [Multiple sessions](https://surrealdb.com/docs/reference/javascript/concepts/multiple-sessions)
 - [Transactions](https://surrealdb.com/docs/reference/javascript/concepts/transactions)
 - [Utilities](https://surrealdb.com/docs/reference/javascript/concepts/utilities)
+- [Validating calls](https://surrealdb.com/docs/reference/javascript/concepts/validating-calls)
 - [Value types](https://surrealdb.com/docs/reference/javascript/concepts/value-types)
 - [Node.js](https://surrealdb.com/docs/reference/javascript/engines/node)
 - [WebAssembly](https://surrealdb.com/docs/reference/javascript/engines/wasm)
@@ -980,8 +981,8 @@ Working notes:
 - [Hybrid search](https://surrealdb.com/docs/agent-memory/retrieve/hybrid-search): Vector, BM25, and graph-density retrieval modes.
 - [Keywords and BM25](https://surrealdb.com/docs/agent-memory/retrieve/keywords-and-bm25): Keyword extraction and full-text search.
 - [Recalling memories](https://surrealdb.com/docs/agent-memory/retrieve/recall): Unified retrieval over facts and document passages.
-- [Adding turns](https://surrealdb.com/docs/agent-memory/sessions/adding-turns): How to add conversation turns.
-- [Chat sessions](https://surrealdb.com/docs/agent-memory/sessions/chat-sessions): Using chat() for conversation loops managed by SurrealDB Agent Memory.
+- [Adding turns](https://surrealdb.com/docs/agent-memory/sessions/adding-turns)
+- [Chat sessions](https://surrealdb.com/docs/agent-memory/sessions/chat-sessions)
 - [Creating sessions](https://surrealdb.com/docs/agent-memory/sessions/creating-sessions)
 - [State and diffs](https://surrealdb.com/docs/agent-memory/sessions/state-and-diffs)
 - [Caching and invalidation](https://surrealdb.com/docs/agent-memory/tuning/caching-and-invalidation)
