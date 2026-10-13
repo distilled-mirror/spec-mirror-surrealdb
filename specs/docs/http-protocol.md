@@ -139,6 +139,36 @@ You can use the HTTP endpoints to perform the following actions:
 
 <br />
 
+## Authentication
+
+Most endpoints accept a user's name and password through HTTP Basic authentication, sent in the `Authorization` header (`curl -u name:password`). By default the server checks those credentials against the root users. A user defined on a namespace or a database is not found there, so the request fails with `401` and the message `There was a problem with authentication`.
+
+To sign in as a namespace or database user, also send the headers that say where the user is defined:
+
+| Header | Value | Needed for |
+| --- | --- | --- |
+| `Surreal-Auth-NS` | The namespace the user is defined on | Namespace and database users |
+| `Surreal-Auth-DB` | The database the user is defined on | Database users |
+
+These headers only locate the user. The namespace and database that the request works in still come from `Surreal-NS` and `Surreal-DB`, so a request usually sends both pairs. The following request signs in as `clerk`, a user defined with `DEFINE USER clerk ON DATABASE`, and queries the same database:
+
+```bash
+curl -X POST -u "clerk:hunter123" \
+  -H "Surreal-Auth-NS: shop" -H "Surreal-Auth-DB: orders" \
+  -H "Surreal-NS: shop" -H "Surreal-DB: orders" \
+  -H "Accept: application/json" \
+  -d "SELECT * FROM item;" \
+  http://localhost:8000/sql
+```
+
+```json title="Response"
+[{ "result": [{ "id": "item:1" }], "status": "OK", "time": "1.646375ms", "type": null }]
+```
+
+A namespace user needs only `Surreal-Auth-NS`. Without `Surreal-NS`, the same request authenticates but returns the error `Specify a namespace to use`.
+
+To avoid sending a password with every request, sign in once with [`POST /signin`](#signin) and send the token it returns as `Authorization: Bearer <token>`. A token already carries the namespace and database of its user.
+
 ## Request size limits
 
 Each endpoint caps the size of the request body it will accept. A request over the cap is rejected with `413 Payload Too Large`. The limits differ per endpoint because they are sized to the work each one does: `/sql` takes a query, `/import` takes a data file.
@@ -274,9 +304,9 @@ This HTTP RESTful endpoint is the startup and readiness probe. It returns `200` 
 - The startup work that follows opening the datastore has finished. From 3.3.0 this covers the version check and any data migrations, the default namespace and database, the root credentials, node registration, and any import set with `--import-file`.
 - The node's cluster heartbeat is recent. The node refreshes it every `--node-membership-refresh-interval`, 3 seconds by default, and `/ready` treats it as stale once it is more than three intervals old.
 
-It returns `503` while startup is still running, when the heartbeat is stale, or when the node has no cluster membership record, and `500` when the heartbeat cannot be read. A node with no cluster membership record returned `500` before 3.3.0. _(since v3.3.0)_ SurrealDB Enterprise adds conditions of its own, such as a valid [licence](/docs/manage/enterprise.md).
+It returns `503` while startup is still running, when the heartbeat is stale, or when the node has no cluster membership record, and `500` when the heartbeat cannot be read. A node with no cluster membership record returned `500` before 3.3.0. SurrealDB Enterprise adds conditions of its own, such as a valid [licence](/docs/manage/enterprise.md).
 
-Until startup finishes, every other path except `/`, `/status`, `/health`, `/version` and `/metrics` returns `503` with `Retry-After: 1`, so query and authentication requests wait for the node while `/ready` stays reachable and orchestrators can tell a starting node from a failed one. With no import configured, the server waits up to 5 seconds for startup before it accepts connections, so an ordinary start reports `200` from the first probe. _(since v3.3.0)_ A start with an import accepts connections straight away, and one that runs past 5 seconds accepts them at that point, and both report `503` until startup finishes. A failure to initialise the datastore stops the process, while a failed import or credential initialisation leaves the server running and `/ready` at `503`.
+Until startup finishes, every other path except `/`, `/status`, `/health`, `/version` and `/metrics` returns `503` with `Retry-After: 1`, so query and authentication requests wait for the node while `/ready` stays reachable and orchestrators can tell a starting node from a failed one. With no import configured, the server waits up to 5 seconds for startup before it accepts connections, so an ordinary start reports `200` from the first probe. A start with an import accepts connections straight away, and one that runs past 5 seconds accepts them at that point, and both report `503` until startup finishes. A failure to initialise the datastore stops the process, while a failed import or credential initialisation leaves the server running and `/ready` at `503`.
 
 Contrast with [`GET /status`](#status) (process and listener liveness only) and [`GET /health`](#health) (storage backend reachability only).
 
@@ -588,7 +618,7 @@ POST /signin
 
 This HTTP RESTful endpoint is used to access an existing account inside the SurrealDB database server.
 
-When [authentication rate limiting](/docs/reference/cli/surrealdb-cli/environment-variables.md#authentication-rate-limiting-environment-variables) is enabled, an attempt beyond the client address's budget is refused with `429 Too Many Requests` and a `Retry-After` header giving the number of seconds to wait, and the error body says that too many authentication attempts were made from this client address. `/signin` and [`/signup`](#signup) draw on the same budget. _(since v3.3.0)_
+When [authentication rate limiting](/docs/reference/cli/surrealdb-cli/environment-variables.md#authentication-rate-limiting-environment-variables) is enabled, an attempt beyond the client address's budget is refused with `429 Too Many Requests` and a `Retry-After` header giving the number of seconds to wait, and the error body says that too many authentication attempts were made from this client address. `/signin` and [`/signup`](#signup) draw on the same budget. Authentication rate limiting is available from SurrealDB 3.3.
 
 ### Headers
 
@@ -748,7 +778,7 @@ Using the [user credentials](/docs/learn/security/authentication/users.md#record
 
 This HTTP RESTful endpoint is used to create an account inside the SurrealDB database server.
 
-When [authentication rate limiting](/docs/reference/cli/surrealdb-cli/environment-variables.md#authentication-rate-limiting-environment-variables) is enabled, an attempt beyond the client address's budget is refused with `429 Too Many Requests` and a `Retry-After` header giving the number of seconds to wait. `/signup` shares its budget with [`/signin`](#signin). _(since v3.3.0)_
+When [authentication rate limiting](/docs/reference/cli/surrealdb-cli/environment-variables.md#authentication-rate-limiting-environment-variables) is enabled, an attempt beyond the client address's budget is refused with `429 Too Many Requests` and a `Retry-After` header giving the number of seconds to wait. `/signup` shares its budget with [`/signin`](#signin). Authentication rate limiting is available from SurrealDB 3.3.
 
 ### Header
 
