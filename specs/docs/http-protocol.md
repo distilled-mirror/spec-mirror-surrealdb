@@ -10,7 +10,7 @@ The endpoints are designed to be simple and easy to use in stateless environment
 
 ## Setup
 
-The [`surreal start`](/docs/reference/cli/surrealdb-cli/commands/start.md) command without any arguments is all that is needed to start a server at the default `http://localhost:8000` address. Many examples below assume the flags `--user root` and `--pass secret` to create a root user with the name `root` and password `secret`. The `--unauthenticated` flag can be used when experimenting to turn off authentication, effectively allowing root access by any and all connections.
+The [`surreal db start`](/docs/reference/cli/db/commands/start.md) command without any arguments is all that is needed to start a server at the default `http://localhost:8000` address. Many examples below assume the flags `--user root` and `--pass secret` to create a root user with the name `root` and password `secret`. The `--unauthenticated` flag can be used when experimenting to turn off authentication, effectively allowing root access by any and all connections.
 
 The [local database serving](/docs/explore/studio.md) functionality on the SurrealDB Studio can also be used to start a server.
 
@@ -200,7 +200,7 @@ The 1 MiB ceiling that a large query runs into applies only to the raw HTTP `/sq
 
 ### Tuning the limits
 
-Every limit above is set by an [environment variable](/docs/reference/cli/surrealdb-cli/environment-variables.md#http-server-config) on a self-hosted server. From 3.0 those variables accept byte-size suffixes such as `16MiB` or `4GB`; on 2.x they take a raw byte count.
+Every limit above is set by an [environment variable](/docs/reference/cli/db/environment-variables.md#http-server-config) on a self-hosted server. From 3.0 those variables accept byte-size suffixes such as `16MiB` or `4GB`; on 2.x they take a raw byte count.
 
 SurrealDB Cloud instances run the defaults listed above.
 
@@ -210,7 +210,7 @@ SurrealDB Cloud instances run the defaults listed above.
 
 _(since v3.3.0)_
 
-When the server is started with [`--query-timeout`](/docs/reference/cli/surrealdb-cli/environment-variables.md#command-environment-variables) (`SURREAL_QUERY_TIMEOUT`), the same duration also limits the wall-clock time of a whole request on these endpoints:
+When the server is started with [`--query-timeout`](/docs/reference/cli/db/environment-variables.md#command-environment-variables) (`SURREAL_QUERY_TIMEOUT`), the same duration also limits the wall-clock time of a whole request on these endpoints:
 
 - [`POST /sql`](#sql) and the `/sql` WebSocket.
 - [`POST /gql`](#gql).
@@ -310,7 +310,7 @@ Until startup finishes, every other path except `/`, `/status`, `/health`, `/ver
 
 Contrast with [`GET /status`](#status) (process and listener liveness only) and [`GET /health`](#health) (storage backend reachability only).
 
-The CLI [`surreal isready`](/docs/reference/cli/surrealdb-cli/commands/isready.md) command calls this endpoint.
+The CLI [`surreal db isready`](/docs/reference/cli/db/commands/isready.md) command calls this endpoint.
 
 ```bash title="Request"
 curl -i http://localhost:8000/ready
@@ -618,7 +618,7 @@ POST /signin
 
 This HTTP RESTful endpoint is used to access an existing account inside the SurrealDB database server.
 
-When [authentication rate limiting](/docs/reference/cli/surrealdb-cli/environment-variables.md#authentication-rate-limiting-environment-variables) is enabled, an attempt beyond the client address's budget is refused with `429 Too Many Requests` and a `Retry-After` header giving the number of seconds to wait, and the error body says that too many authentication attempts were made from this client address. `/signin` and [`/signup`](#signup) draw on the same budget. Authentication rate limiting is available from SurrealDB 3.3.
+When [authentication rate limiting](/docs/reference/cli/db/environment-variables.md#authentication-rate-limiting-environment-variables) is enabled, an attempt beyond the client address's budget is refused with `429 Too Many Requests` and a `Retry-After` header giving the number of seconds to wait, and the error body says that too many authentication attempts were made from this client address. `/signin` and [`/signup`](#signup) draw on the same budget. Authentication rate limiting is available from SurrealDB 3.3.
 
 ### Headers
 
@@ -778,7 +778,7 @@ Using the [user credentials](/docs/learn/security/authentication/users.md#record
 
 This HTTP RESTful endpoint is used to create an account inside the SurrealDB database server.
 
-When [authentication rate limiting](/docs/reference/cli/surrealdb-cli/environment-variables.md#authentication-rate-limiting-environment-variables) is enabled, an attempt beyond the client address's budget is refused with `429 Too Many Requests` and a `Retry-After` header giving the number of seconds to wait. `/signup` shares its budget with [`/signin`](#signin). Authentication rate limiting is available from SurrealDB 3.3.
+When [authentication rate limiting](/docs/reference/cli/db/environment-variables.md#authentication-rate-limiting-environment-variables) is enabled, an attempt beyond the client address's budget is refused with `429 Too Many Requests` and a `Retry-After` header giving the number of seconds to wait. `/signup` shares its budget with [`/signin`](#signin). Authentication rate limiting is available from SurrealDB 3.3.
 
 ### Header
 
@@ -1909,7 +1909,7 @@ curl -X POST -H "Bearer: YourToken" -H "Surreal-NS: main" -H "Surreal-DB: main" 
 
 _(since v3.0.4)_
 
-As of SurrealDB 3.0.4, imports via the [`surreal import`](/docs/reference/cli/surrealdb-cli/commands/import.md) and [`/import`](#import) HTTP endpoint require the automatically generated `OPTION IMPORT` line to be present in order to disable events, live queries, field processing, and result output for optimal import performance. If side effects are desired when importing data, remove the line and use this endpoint instead.
+As of SurrealDB 3.0.4, imports via the [`surreal db import`](/docs/reference/cli/db/commands/import.md) and [`/import`](#import) HTTP endpoint require the automatically generated `OPTION IMPORT` line to be present in order to disable events, live queries, field processing, and result output for optimal import performance. If side effects are desired when importing data, remove the line and use this endpoint instead.
 
 <br />
 
@@ -1920,7 +1920,7 @@ _(since v3.2.0)_
 The GQL endpoint runs [ISO GQL (Cypher Query Language)](/docs/learn/querying/gql/overview.md) graph pattern queries against your existing tables and `RELATE` edges - `MATCH … RETURN` reads and data-modifying `INSERT`, `SET`, `REMOVE`, and `DELETE` ([GQL mutations](/docs/learn/querying/gql/mutations.md)).
 
 > [!NOTE]
-> From **3.3.0**, GQL is enabled by default - no experimental capability is required. On **3.2.x**, enable it with [`--allow-experimental gql`](/docs/reference/cli/surrealdb-cli/commands/start.md#experimental-capabilities) (or `SURREAL_CAPS_ALLOW_EXPERIMENTAL=gql`). `--allow-all` does not enable experimental capabilities on 3.2.x.
+> From **3.3.0**, GQL is enabled by default - no experimental capability is required. On **3.2.x**, enable it with [`--allow-experimental gql`](/docs/reference/cli/db/commands/start.md#experimental-capabilities) (or `SURREAL_CAPS_ALLOW_EXPERIMENTAL=gql`). `--allow-all` does not enable experimental capabilities on 3.2.x.
 
 > [!NOTE]
 > This endpoint is **not** [GraphQL](/docs/learn/querying/graphql/overview.md). GraphQL queries belong on [`POST /graphql`](#graphql).
@@ -2304,10 +2304,10 @@ A custom endpoint can be set using a [`DEFINE API`](/docs/reference/query-langua
 
 ### Example usage
 
-To begin, start a server with the `surreal start` command.
+To begin, start a server with the `surreal db start` command.
 
 ```bash
-surreal start --user root --pass secret
+surreal db start --user root --pass secret
 ```
 
 A custom endpoint can first be set up using a `DEFINE API` statement via the `/sql` endpoint.
