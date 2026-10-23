@@ -269,6 +269,7 @@ Working notes:
 - [Slow-query logging](https://surrealdb.com/docs/manage/observability/slow-query-logging)
 - [Telemetry (OTLP)](https://surrealdb.com/docs/manage/observability/telemetry)
 - [Tokio console](https://surrealdb.com/docs/manage/observability/tokio-console)
+- [Account structure](https://surrealdb.com/docs/manage/organisations/account-structure)
 - [AWS Marketplace](https://surrealdb.com/docs/manage/organisations/aws-marketplace)
 - [Azure Marketplace](https://surrealdb.com/docs/manage/organisations/azure-marketplace)
 - [Billing](https://surrealdb.com/docs/manage/organisations/billing)
@@ -972,11 +973,11 @@ Working notes:
 - [Authority when pillars meet](https://surrealdb.com/docs/agent-memory/reasoning/authority-hierarchy): How the Authoritative and Experiential pillars interact.
 - [Cross-layer linking](https://surrealdb.com/docs/agent-memory/reasoning/cross-layer-linking): How authoritative documents and experiential facts relate.
 - [Extraction pipeline](https://surrealdb.com/docs/agent-memory/reasoning/extraction-pipeline): How structured memory is extracted from conversation turns.
-- [Instructions and uncertainties](https://surrealdb.com/docs/agent-memory/reasoning/instructions-and-uncertainties): How behavioural directives are captured and tracked.
+- [Instructions and uncertainties](https://surrealdb.com/docs/agent-memory/reasoning/instructions-and-uncertainties)
 - [Reconciliation and supersession](https://surrealdb.com/docs/agent-memory/reasoning/reconciliation-and-supersession)
 - [Temporal validity](https://surrealdb.com/docs/agent-memory/reasoning/temporal-validity)
 - [Agent guide (AGENTS.md)](https://surrealdb.com/docs/agent-memory/reference/agents)
-- [CLI](https://surrealdb.com/docs/agent-memory/reference/cli): Command-line interface reference.
+- [CLI](https://surrealdb.com/docs/agent-memory/reference/cli)
 - [Configuration](https://surrealdb.com/docs/agent-memory/reference/configuration)
 - [Errors](https://surrealdb.com/docs/agent-memory/reference/errors)
 - [Glossary](https://surrealdb.com/docs/agent-memory/reference/glossary)
