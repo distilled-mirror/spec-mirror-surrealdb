@@ -352,6 +352,7 @@ Working notes:
 - [Build a knowledge graph for AI](https://surrealdb.com/docs/explore/tutorials/tutorials/how-to-build-a-knowledge-graph-for-ai)
 - [Query SurrealDB from Postman](https://surrealdb.com/docs/explore/tutorials/tutorials/http-via-postman)
 - [Build a minimal LangChain chatbot](https://surrealdb.com/docs/explore/tutorials/tutorials/minimal-langchain)
+- [Navigate a drone without GPS](https://surrealdb.com/docs/explore/tutorials/tutorials/navigate-a-drone-without-gps)
 - [Tutorials](https://surrealdb.com/docs/explore/tutorials/tutorials/overview)
 - [Implement semantic search in Rust](https://surrealdb.com/docs/explore/tutorials/tutorials/semantic-search-in-rust)
 
@@ -971,8 +972,8 @@ Working notes:
 - [Hosted quickstart](https://surrealdb.com/docs/agent-memory/quickstarts/hosted): Get SurrealDB Agent Memory running in five minutes.
 - [Agent Memory on SurrealDB Cloud](https://surrealdb.com/docs/agent-memory/quickstarts/surrealdb-cloud): How contexts, authentication and the APIs work on SurrealDB Cloud.
 - [Authority when pillars meet](https://surrealdb.com/docs/agent-memory/reasoning/authority-hierarchy): How the Authoritative and Experiential pillars interact.
-- [Cross-layer linking](https://surrealdb.com/docs/agent-memory/reasoning/cross-layer-linking): How authoritative documents and experiential facts relate.
-- [Extraction pipeline](https://surrealdb.com/docs/agent-memory/reasoning/extraction-pipeline): How structured memory is extracted from conversation turns.
+- [Cross-layer linking](https://surrealdb.com/docs/agent-memory/reasoning/cross-layer-linking)
+- [Extraction pipeline](https://surrealdb.com/docs/agent-memory/reasoning/extraction-pipeline)
 - [Instructions and uncertainties](https://surrealdb.com/docs/agent-memory/reasoning/instructions-and-uncertainties)
 - [Reconciliation and supersession](https://surrealdb.com/docs/agent-memory/reasoning/reconciliation-and-supersession)
 - [Temporal validity](https://surrealdb.com/docs/agent-memory/reasoning/temporal-validity)
