@@ -397,7 +397,7 @@ Working notes:
 - [HTTP protocol](https://surrealdb.com/docs/reference/rest-api/http-protocol): Query and modify data over plain HTTP endpoints.
 - [Postgres wire protocol](https://surrealdb.com/docs/reference/rest-api/postgres-protocol): Connect with standard Postgres clients and drivers.
 - [RPC protocol](https://surrealdb.com/docs/reference/rest-api/rpc-protocol): Bidirectional RPC over WebSocket, HTTP and gRPC.
-- [SDK Concepts](https://surrealdb.com/docs/reference/rust/concepts)
+- [SDK concepts](https://surrealdb.com/docs/reference/rust/concepts)
 - [Embedding](https://surrealdb.com/docs/reference/rust/embedding)
 - [Crates](https://surrealdb.com/docs/reference/rust/frameworks)
 - [SDK methods](https://surrealdb.com/docs/reference/rust/methods)
@@ -641,6 +641,7 @@ Working notes:
 - [Flexible typing](https://surrealdb.com/docs/reference/rust/concepts/flexible-typing)
 - [Live queries](https://surrealdb.com/docs/reference/rust/concepts/live)
 - [Multi-tenancy](https://surrealdb.com/docs/reference/rust/concepts/multi-tenancy)
+- [Raspberry Pi and small devices](https://surrealdb.com/docs/reference/rust/concepts/raspberry-pi)
 - [SurrealValue attributes](https://surrealdb.com/docs/reference/rust/concepts/surrealvalue-attributes)
 - [Manual transactions](https://surrealdb.com/docs/reference/rust/concepts/transaction)
 - [Vector embeddings](https://surrealdb.com/docs/reference/rust/concepts/vector-embeddings)
@@ -970,15 +971,15 @@ Working notes:
 - [Reflection](https://surrealdb.com/docs/agent-memory/operations/reflect): Synthesise insights from patterns across stored memories.
 - [Embedded library quickstart](https://surrealdb.com/docs/agent-memory/quickstarts/embedded): Integration surfaces for SurrealDB Agent Memory.
 - [Hosted quickstart](https://surrealdb.com/docs/agent-memory/quickstarts/hosted): Get SurrealDB Agent Memory running in five minutes.
-- [Agent Memory on SurrealDB Cloud](https://surrealdb.com/docs/agent-memory/quickstarts/surrealdb-cloud): How contexts, authentication and the APIs work on SurrealDB Cloud.
-- [Authority when pillars meet](https://surrealdb.com/docs/agent-memory/reasoning/authority-hierarchy): How the Authoritative and Experiential pillars interact.
+- [Agent Memory on SurrealDB Cloud](https://surrealdb.com/docs/agent-memory/quickstarts/surrealdb-cloud)
+- [Authority when pillars meet](https://surrealdb.com/docs/agent-memory/reasoning/authority-hierarchy)
 - [Cross-layer linking](https://surrealdb.com/docs/agent-memory/reasoning/cross-layer-linking)
 - [Extraction pipeline](https://surrealdb.com/docs/agent-memory/reasoning/extraction-pipeline)
 - [Instructions and uncertainties](https://surrealdb.com/docs/agent-memory/reasoning/instructions-and-uncertainties)
 - [Reconciliation and supersession](https://surrealdb.com/docs/agent-memory/reasoning/reconciliation-and-supersession)
 - [Temporal validity](https://surrealdb.com/docs/agent-memory/reasoning/temporal-validity)
 - [Agent guide (AGENTS.md)](https://surrealdb.com/docs/agent-memory/reference/agents)
-- [CLI](https://surrealdb.com/docs/agent-memory/reference/cli)
+- [CLI](https://surrealdb.com/docs/agent-memory/reference/cli): Command-line interface reference.
 - [Configuration](https://surrealdb.com/docs/agent-memory/reference/configuration)
 - [Errors](https://surrealdb.com/docs/agent-memory/reference/errors)
 - [Glossary](https://surrealdb.com/docs/agent-memory/reference/glossary)
