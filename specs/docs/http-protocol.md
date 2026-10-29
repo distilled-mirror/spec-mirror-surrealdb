@@ -75,6 +75,22 @@ You can use the HTTP endpoints to perform the following actions:
             <td scope="row" data-label="Description">Signs-in as a root, namespace, database, or record user</td>
         </tr>
         <tr>
+            <td scope="row" data-label="Function"><a href="#signin-cookie"><code>POST /signin/cookie</code></a></td>
+            <td scope="row" data-label="Description">Signs in like <code>POST /signin</code>, and returns the token in an <code>HttpOnly</code> cookie (requires <code>--cookie-auth</code>)</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#signup-cookie"><code>POST /signup/cookie</code></a></td>
+            <td scope="row" data-label="Description">Signs up like <code>POST /signup</code>, and returns the token in an <code>HttpOnly</code> cookie (requires <code>--cookie-auth</code>)</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#refresh-cookie"><code>POST /refresh/cookie</code></a></td>
+            <td scope="row" data-label="Description">Exchanges the refresh cookie for a new access cookie and refresh cookie (requires <code>--cookie-auth</code>)</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#signout"><code>POST /signout</code></a></td>
+            <td scope="row" data-label="Description">Revokes the refresh token and clears the session cookies (requires <code>--cookie-auth</code>)</td>
+        </tr>
+        <tr>
             <td scope="row" data-label="Function"><a href="#get-table"><code>GET /key/:table</code></a></td>
             <td scope="row" data-label="Description">Selects all records in a table from the database</td>
         </tr>
@@ -120,7 +136,7 @@ You can use the HTTP endpoints to perform the following actions:
         </tr>
         <tr>
             <td scope="row" data-label="Function"><a href="#gql"><code>POST /gql</code></a></td>
-            <td scope="row" data-label="Description">Runs ISO GQL (Cypher Query Language) graph pattern queries (`MATCH … RETURN …`, plus `INSERT` / `SET` / `REMOVE` / `DELETE`)</td>
+            <td scope="row" data-label="Description">Runs ISO GQL graph pattern queries (`MATCH … RETURN …`, plus `INSERT` / `SET` / `REMOVE` / `DELETE`)</td>
         </tr>
         <tr>
             <td scope="row" data-label="Function"><a href="#graphql"><code>POST /graphql</code></a></td>
@@ -173,6 +189,53 @@ A namespace user needs only `Surreal-Auth-NS`. Without `Surreal-NS`, the same re
 
 To avoid sending a password with every request, sign in once with [`POST /signin`](#signin) and send the token it returns as `Authorization: Bearer <token>`. A token already carries the namespace and database of its user.
 
+### Cookie authentication
+
+_(since v4.0.0)_
+
+A browser application can keep its access token in an `HttpOnly` cookie, which scripts on the page cannot read. The server issues and accepts the cookie only when it is started with `--cookie-auth` and an explicit `--allow-origin` list:
+
+```bash
+surreal start --cookie-auth --allow-origin https://app.example.com --user root --pass secret surrealkv://data
+```
+
+The server does not start with `--cookie-auth` alone, and reports `cookie authentication requires an explicit --allow-origin list`. A list that contains `*` is refused with `cookie authentication refuses a wildcard --allow-origin`.
+
+The application signs in through [`POST /signin/cookie`](#signin-cookie) or [`POST /signup/cookie`](#signup-cookie), which take the same body as `/signin` and `/signup`. The browser has to send credentials with the request so that it stores the cookie and sends it back:
+
+```js
+await fetch("https://db.example.com/signin/cookie", {
+	method: "POST",
+	credentials: "include",
+	headers: { Accept: "application/json" },
+	body: JSON.stringify({ ns: "main", db: "main", ac: "users", email: "tobie@example.com", pass: "secret" }),
+});
+```
+
+The response sets the `surreal_token` cookie and holds no token in its body:
+
+```text title="Response"
+HTTP/1.1 200 OK
+set-cookie: surreal_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900
+access-control-allow-credentials: true
+access-control-allow-origin: https://app.example.com
+
+{"code":200,"details":"Authentication succeeded"}
+```
+
+The rules for the cookie are as follows:
+
+- **Origins.** The server reads the cookie only from a request whose `Origin` header exactly matches an entry in `--allow-origin`, or which sends `Sec-Fetch-Site: same-origin`. Another subdomain, scheme or port does not match. The same check applies to WebSocket connections on `/rpc` and `/sql`.
+- **A cookie that is not accepted.** A cookie from an origin that is not allowed is ignored, and the request runs as if it had no credentials. A cookie whose token fails verification, for example because it has expired, is also ignored, and the response clears it.
+- **`Authorization` first.** A request that sends an `Authorization` header is authenticated with that header, and the cookie is not read.
+- **Lifetime.** `Max-Age` is the time until the token or the session expires, whichever comes first. When neither the token nor the session expires, no cookie is issued, and the request fails with `A session cookie cannot be issued because the session has no expiry`. [`POST /signout`](#signout) clears the cookie.
+- **Refresh cookie.** When a record user signs in or signs up through a [record access method](/docs/reference/query-language/statements/define/access/record.md) defined `WITH REFRESH`, the response also sets a `surreal_refresh` cookie with the same attributes. Its `Max-Age` is the duration of the access method's refresh grant, and no refresh cookie is issued when the grant does not expire. [`POST /refresh/cookie`](#refresh-cookie) exchanges it for a new access cookie and a new refresh cookie, so the application does not have to sign in again when the access token expires. The server never authenticates a request with the refresh cookie itself. Without a refresh cookie, the application signs in again when the token expires.
+- **HTTPS.** The cookie is `Secure`, so a browser stores it only over HTTPS or on a loopback address such as `localhost`.
+- **Status codes.** Without `--cookie-auth`, `/signin/cookie`, `/signup/cookie`, `/refresh/cookie` and `/signout` answer `404`. With it, a request to one of them from an origin that is not allowed, or with no `Origin` header, answers `403` with the message `The request origin is not allowed to use cookie authentication`.
+
+> [!NOTE]
+> The `surreal_token` and `surreal_refresh` cookies are removed from `$request.headers` in a [`DEFINE API`](/docs/reference/query-language/statements/define/api.md) handler. Other cookies in the request stay.
+
 ## Request size limits
 
 Each endpoint caps the size of the request body it will accept. A request over the cap is rejected with `413 Payload Too Large`. The limits differ per endpoint because they are sized to the work each one does: `/sql` takes a query, `/import` takes a data file.
@@ -185,6 +248,7 @@ The defaults are the same in 2.x and 3.x:
 | `POST /rpc` | 4 MiB | `SURREAL_HTTP_MAX_RPC_BODY_SIZE` |
 | `/api/:namespace/:database/:endpoint` | 4 MiB | `SURREAL_HTTP_MAX_API_BODY_SIZE` |
 | `POST /gql` | 1 MiB | `SURREAL_HTTP_MAX_GQL_BODY_SIZE` |
+| `POST /graphql` _(since v4.0.0)_ | 1 MiB | `SURREAL_HTTP_MAX_GRAPHQL_BODY_SIZE` |
 | `/key` CRUD endpoints | 16 KiB | `SURREAL_HTTP_MAX_KEY_BODY_SIZE` |
 | `POST /signin` | 1 KiB | `SURREAL_HTTP_MAX_SIGNIN_BODY_SIZE` |
 | `POST /signup` | 1 KiB | `SURREAL_HTTP_MAX_SIGNUP_BODY_SIZE` |
@@ -238,6 +302,25 @@ A `/graphql` request that runs out of time returns a GraphQL response whose erro
 
 <br />
 
+## Memory pressure
+
+_(since v3.3.5)_
+
+When the server is started with [`SURREAL_MEMORY_THRESHOLD`](/docs/reference/cli/db/environment-variables.md#limits-config) and its tracked memory is above that size, `POST /rpc` refuses a request before it reads the body. The response is `503 Service Unavailable` with a `Retry-After: 1` header, so load balancers and clients can retry it once memory is released:
+
+```json title="Response"
+{
+	"code": 503,
+	"details": "Service unavailable",
+	"description": "The server is under memory pressure and refused this request. Retry shortly.",
+	"information": "..."
+}
+```
+
+Before SurrealDB 3.3.5, the same refusal was answered with `400 Bad Request`.
+
+<br />
+
 ## Datetimes and other types in a JSON body
 
 JSON has no datetime, record ID or duration type, so a value sent in a JSON body, such as to `POST /key/:table`, arrives as a plain string. `{ "at": "2026-01-01T10:00:00Z" }` stores `at` as a string, and a field defined with `TYPE datetime` refuses it, because `TYPE` is checked before any conversion.
@@ -279,6 +362,8 @@ date: Tue, 03 Feb 2026 02:10:33 GMT
 ## `GET /health` {#health}
 
 This HTTP RESTful endpoint checks whether the storage engine responds, by reading one key in a read-only transaction. It returns `200` when the read succeeds and `500` when it fails, or `403` when the `health` route is denied by [capabilities](/docs/learn/security/authorization/capabilities.md#http-route-names).
+
+From SurrealDB 3.3.5, on a server started with [`SURREAL_MEMORY_THRESHOLD`](/docs/reference/cli/db/environment-variables.md#limits-config), `/health` also returns `503 Service Unavailable` once the memory threshold has refused every request without a break for `SURREAL_MEMORY_THRESHOLD_UNHEALTHY_AFTER` seconds, 60 by default. A process in that state does not release memory until it restarts, so a liveness probe on `/health` restarts it. A single moment below the threshold resets the count.
 
 `/health` stays reachable while the server is still starting up, so a `200` shows that the storage engine answers, not that startup has finished. [`GET /ready`](#ready) is the endpoint that reports whether it has.
 
@@ -351,7 +436,7 @@ curl http://localhost:8000/version
 ```
 
 ```bash title="Sample output"
-surrealdb-3.0.0
+surrealdb-4.0.0
 ```
 
 <br />
@@ -441,6 +526,8 @@ curl -X POST -u "root:secret" \
 ## `POST /export` {#export}
 
 This HTTP RESTful endpoint exports all data for a specific Namespace and Database.
+
+The caller must be a system user with a role (`VIEWER`, `EDITOR` or `OWNER`) at the database level or above. A record user, and a token that holds no role, are refused with `403` and the message `IAM error: Not enough permissions to perform this action`.
 
 ### Headers
 
@@ -618,6 +705,10 @@ curl -X POST \
 
 This HTTP RESTful endpoint streams the open datastore's entire keyspace from a single snapshot. Unlike [`POST /export`](#export), which writes a SurrealQL export of one Namespace and Database, `/kvexport` streams the raw stored bytes of the whole datastore, so another instance can be seeded from a byte-level copy. It is a low-level operation, intended for migrating or cloning a datastore rather than for everyday backups.
 
+The name stands for key-value export. SurrealDB keeps every record, definition and index entry as keys and values in its storage engine, and this endpoint exports those keys and values as they are stored, where `/export` writes SurrealQL statements that rebuild them. The endpoint exists to move a datastore to a different storage engine without an export and import. The new instance reads the stream and writes the keys into its own datastore before it starts. Because the copy includes the record of which data migrations the datastore has run, the new instance applies any that are still owed at startup, as it would on the original datastore. A SurrealQL import, by comparison, replays every statement through the query engine and starts from an empty datastore.
+
+`POST /kvexport` is available in SurrealDB 3.2.6, 3.3.5 and 4.0.
+
 > [!IMPORTANT]
 > `POST /kvexport` is an experimental feature and is off by default. Start the server with `--allow-experimental kvexport` to enable it. It has its own HTTP route target, so `--deny-http kvexport` turns it off without affecting [`/export`](#export). See the [capabilities documentation](/docs/learn/security/authorization/capabilities.md) for how experimental features are enabled.
 
@@ -726,7 +817,7 @@ POST /signin
 
 This HTTP RESTful endpoint is used to access an existing account inside the SurrealDB database server.
 
-When [authentication rate limiting](/docs/reference/cli/db/environment-variables.md#authentication-rate-limiting-environment-variables) is enabled, an attempt beyond the client address's budget is refused with `429 Too Many Requests` and a `Retry-After` header giving the number of seconds to wait, and the error body says that too many authentication attempts were made from this client address. `/signin` and [`/signup`](#signup) draw on the same budget. Authentication rate limiting is available from SurrealDB 3.3.
+When [authentication rate limiting](/docs/reference/cli/db/environment-variables.md#authentication-rate-limiting-environment-variables) is enabled, an attempt beyond the client address's budget is refused with `429 Too Many Requests` and a `Retry-After` header giving the number of seconds to wait, and the error body says that too many authentication attempts were made from this client address. `/signin` and [`/signup`](#signup) draw on the same budget, and so does a request to any endpoint that carries HTTP Basic credentials. Authentication rate limiting is available from SurrealDB 3.3.
 
 ### Headers
 
@@ -1039,6 +1130,94 @@ The above query defines a record access method called `account` that allows user
     "details": "Authentication succeeded",
     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpYXQiOjE3MDY2MTA4MDMsIm5iZiI6MTcwNjYxMDgwMywiZXhwIjoxNzA2Njk3MjAzLCJpc3MiOiJTdXJyZWFsREIiLCJOUyI6InRlc3QiLCJEQiI6InRlc3QiLCJBQyI6Imh1bWFuIiwiSUQiOiJ1c2VyOjZsOTl1OWI0bzVoa3h0NnY3c3NzIn0.3jR8PHgS8iLefZDuPHBFcdUFNfuB3OBNqQtqxLVVzxAIxVj1RAkD5rCEZHH2QaPV-D2zNwYO5Fh_a8jD1l_cqQ"
 }
+```
+
+<br />
+
+## `POST /signin/cookie` {#signin-cookie}
+
+_(since v4.0.0)_
+
+This endpoint signs in in the same way as [`POST /signin`](#signin), and takes the same headers and data. Instead of returning the token in the response body, it sets it in the `surreal_token` cookie. The server provides the endpoint only when it is started with `--cookie-auth`. See [Cookie authentication](#cookie-authentication) for the cookie attributes and the origins that can use it.
+
+The endpoint shares its [authentication rate limit](/docs/reference/cli/db/environment-variables.md#authentication-rate-limiting-environment-variables) budget with `/signin`.
+
+### Example usage
+
+```bash title="Request"
+curl -i -X POST -H "Origin: https://app.example.com" -H "Accept: application/json" -d '{"user":"root","pass":"secret"}' https://db.example.com/signin/cookie
+```
+
+```text title="Response"
+HTTP/1.1 200 OK
+set-cookie: surreal_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=3600
+
+{"code":200,"details":"Authentication succeeded"}
+```
+
+## `POST /signup/cookie` {#signup-cookie}
+
+_(since v4.0.0)_
+
+This endpoint signs up a record user in the same way as [`POST /signup`](#signup), and takes the same headers and data. Instead of returning the token in the response body, it sets it in the `surreal_token` cookie. The server provides the endpoint only when it is started with `--cookie-auth`. See [Cookie authentication](#cookie-authentication).
+
+The endpoint shares its [authentication rate limit](/docs/reference/cli/db/environment-variables.md#authentication-rate-limiting-environment-variables) budget with `/signup`.
+
+### Example usage
+
+```bash title="Request"
+curl -i -X POST -H "Origin: https://app.example.com" -H "Accept: application/json" -d '{"ns":"main","db":"main","ac":"users","email":"tobie@example.com","pass":"secret"}' https://db.example.com/signup/cookie
+```
+
+```text title="Response"
+HTTP/1.1 200 OK
+set-cookie: surreal_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900
+
+{"code":200,"details":"Authentication succeeded"}
+```
+
+## `POST /refresh/cookie` {#refresh-cookie}
+
+_(since v4.0.0)_
+
+This endpoint exchanges the `surreal_refresh` cookie that [`POST /signin/cookie`](#signin-cookie) or [`POST /signup/cookie`](#signup-cookie) set for a new `surreal_token` cookie and a new `surreal_refresh` cookie. The request needs no body. The server provides the endpoint only when it is started with `--cookie-auth`, and the request has to come from an allowed origin. See [Cookie authentication](#cookie-authentication).
+
+A refresh token can be used once. If the cookie is missing, or its refresh token has expired, has been revoked or has already been used, the endpoint answers `401` and does not change any cookie. Because each refresh token can be used once, two refreshes sent at the same time, for example from two tabs, cannot both succeed, so an application should send one refresh at a time.
+
+The endpoint shares its [authentication rate limit](/docs/reference/cli/db/environment-variables.md#authentication-rate-limiting-environment-variables) budget with `/signin`.
+
+### Example usage
+
+```bash title="Request"
+curl -i -X POST -H "Origin: https://app.example.com" -H "Accept: application/json" -b "surreal_refresh=..." https://db.example.com/refresh/cookie
+```
+
+```text title="Response"
+HTTP/1.1 200 OK
+set-cookie: surreal_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900
+set-cookie: surreal_refresh=...; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=2592000
+
+{"code":200,"details":"Authentication succeeded"}
+```
+
+## `POST /signout` {#signout}
+
+_(since v4.0.0)_
+
+This endpoint clears the `surreal_token` and `surreal_refresh` cookies that [`POST /signin/cookie`](#signin-cookie), [`POST /signup/cookie`](#signup-cookie) or [`POST /refresh/cookie`](#refresh-cookie) set. When the request carries a refresh cookie whose refresh token is valid, the server also revokes that refresh token, so it cannot be used again. The cookies are cleared whether or not the revocation succeeds. The server provides the endpoint only when it is started with `--cookie-auth`, and the request has to come from an allowed origin. See [Cookie authentication](#cookie-authentication).
+
+The endpoint shares its [authentication rate limit](/docs/reference/cli/db/environment-variables.md#authentication-rate-limiting-environment-variables) budget with `/signin`.
+
+### Example usage
+
+```bash title="Request"
+curl -i -X POST -H "Origin: https://app.example.com" https://db.example.com/signout
+```
+
+```text title="Response"
+HTTP/1.1 200 OK
+set-cookie: surreal_token=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0
+set-cookie: surreal_refresh=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0
 ```
 
 <br />
@@ -2025,7 +2204,7 @@ As of SurrealDB 3.0.4, imports via the [`surreal db import`](/docs/reference/cli
 
 _(since v3.2.0)_
 
-The GQL endpoint runs [ISO GQL (Cypher Query Language)](/docs/learn/querying/gql/overview.md) graph pattern queries against your existing tables and `RELATE` edges - `MATCH … RETURN` reads and data-modifying `INSERT`, `SET`, `REMOVE`, and `DELETE` ([GQL mutations](/docs/learn/querying/gql/mutations.md)).
+The GQL endpoint runs [ISO GQL](/docs/learn/querying/gql/overview.md) graph pattern queries against your existing tables and `RELATE` edges - `MATCH … RETURN` reads and data-modifying `INSERT`, `SET`, `REMOVE`, and `DELETE` ([GQL mutations](/docs/learn/querying/gql/mutations.md)).
 
 > [!NOTE]
 > From **3.3.0**, GQL is enabled by default - no experimental capability is required. On **3.2.x**, enable it with [`--allow-experimental gql`](/docs/reference/cli/db/commands/start.md#experimental-capabilities) (or `SURREAL_CAPS_ALLOW_EXPERIMENTAL=gql`). `--allow-all` does not enable experimental capabilities on 3.2.x.
@@ -2124,7 +2303,7 @@ Parse errors return **HTTP 400** with an error payload. See [GQL via HTTP](/docs
 The GraphQL endpoint enables use of GraphQL queries to interact with your data.
 
 > [!NOTE]
-> This endpoint is **not** [ISO GQL (Cypher Query Language)](/docs/learn/querying/gql/overview.md). GQL `MATCH` queries belong on [`POST /gql`](#gql).
+> This endpoint is **not** [ISO GQL](/docs/learn/querying/gql/overview.md). GQL `MATCH` queries belong on [`POST /gql`](#gql).
 
 > [!NOTE]
 > This HTTP endpoint expects the HTTP body to be a GraphQL query.
