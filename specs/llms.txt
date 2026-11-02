@@ -963,15 +963,15 @@ Working notes:
 - [Eight pillars and six categories](https://surrealdb.com/docs/agent-memory/architecture/eight-pillars-and-categories): The primitives SurrealDB Agent Memory operationalises.
 - [Agent Memory glossary](https://surrealdb.com/docs/agent-memory/architecture/glossary): Alphabetical definitions of SurrealDB Agent Memory terms.
 - [Principles and goals](https://surrealdb.com/docs/agent-memory/architecture/principles-and-goals): What SurrealDB Agent Memory deliberately is and is not.
-- [Surface, models, and security](https://surrealdb.com/docs/agent-memory/architecture/surface-security-and-models): HTTP ingest and read verbs, integrations, and model hooks.
-- [Traces and memory evolution](https://surrealdb.com/docs/agent-memory/architecture/traces-and-evolution): Graph-resident traces, reflection, elaboration, consolidation.
-- [Tri-temporal model](https://surrealdb.com/docs/agent-memory/architecture/tri-temporal-model): System and valid time, supersession, ageing, and explicit forget.
+- [Surface, models, and security](https://surrealdb.com/docs/agent-memory/architecture/surface-security-and-models)
+- [Traces and memory evolution](https://surrealdb.com/docs/agent-memory/architecture/traces-and-evolution)
+- [Tri-temporal model](https://surrealdb.com/docs/agent-memory/architecture/tri-temporal-model)
 - [Showcase](https://surrealdb.com/docs/agent-memory/cookbooks/showcase)
 - [Contexts and scope](https://surrealdb.com/docs/agent-memory/mental-model/contexts-and-scope)
 - [Entities with several names](https://surrealdb.com/docs/agent-memory/mental-model/entities-with-several-names)
 - [Memory categories](https://surrealdb.com/docs/agent-memory/mental-model/memory-categories)
 - [Supersession, decay, and forget](https://surrealdb.com/docs/agent-memory/mental-model/memory-lifecycle)
-- [Provenance and traceability](https://surrealdb.com/docs/agent-memory/mental-model/provenance-and-traceability)
+- [Provenance and traceability](https://surrealdb.com/docs/agent-memory/mental-model/provenance-and-traceability): The source object carried on every record.
 - [Sessions and turns](https://surrealdb.com/docs/agent-memory/mental-model/sessions-and-turns)
 - [Unified substrate and authority](https://surrealdb.com/docs/agent-memory/mental-model/two-layer-architecture)
 - [Forgetting memories](https://surrealdb.com/docs/agent-memory/operations/forget)
@@ -1035,6 +1035,7 @@ Working notes:
 - [Pompeii election notices](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/pompeii)
 - [Robin Hood character graph](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/robin-hood)
 - [Rome, 753 BC to AD 1453](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/rome)
+- [Sundance Lake Loop: who can read what on a pipeline project](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/sundance-lake)
 - [Vulcan, Alberta: an article's history](https://surrealdb.com/docs/agent-memory/cookbooks/showcase/vulcan)
 - [Bulk import](https://surrealdb.com/docs/agent-memory/ingest/authoritative/bulk-import)
 - [Structured fact ingest](https://surrealdb.com/docs/agent-memory/ingest/authoritative/knowledge-nodes)
