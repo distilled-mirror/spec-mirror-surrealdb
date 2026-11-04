@@ -25,4 +25,5 @@ If you prefer a richer client experience, SurrealDB also supports:
 - **[gRPC](/docs/reference/rest-api/rpc-protocol.md#grpc-transport)** - the same RPC protocol over HTTP/2, served on the same port with `grpc://` and `grpcs://` addresses, from 3.3.0.
 - **[Postgres wire protocol](/docs/reference/rest-api/postgres-protocol.md)** - connect with `psql`, JDBC, and other Postgres clients, then run SurrealQL, PostgreSQL SQL or ISO GQL with tabular typed results.
 - **[MySQL wire protocol](/docs/reference/rest-api/mysql-protocol.md)** - from SurrealDB 4.0, connect with the `mysql` client and MySQL drivers, then run MySQL SQL, SurrealQL or another dialect.
+- **[Compatibility matrix](/docs/reference/rest-api/sql-compatibility.md)** - what the PostgreSQL and MySQL dialects run, feature by feature, and what they refuse.
 - **Official SDKs** - language-specific clients for [JavaScript](/docs/languages/javascript.md), [Python](/docs/languages/python.md), [Rust](/docs/languages/rust.md), [Go](/docs/languages/golang.md), [Java](/docs/languages/java.md), [.NET](/docs/languages/dotnet.md), and [PHP](/docs/languages/php.md).

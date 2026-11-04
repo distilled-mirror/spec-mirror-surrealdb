@@ -143,16 +143,12 @@ You can use the HTTP endpoints to perform the following actions:
             <td scope="row" data-label="Description">Allows custom GraphQL queries</td>
         </tr>
         <tr>
-            <td scope="row" data-label="Function"><a href="#ml-import"><code>POST /ml/import</code></a></td>
-            <td scope="row" data-label="Description">Import a SurrealML model into a specific Namespace and Database</td>
-        </tr>
-        <tr>
-            <td scope="row" data-label="Function"><a href="#ml-export"><code>GET /ml/export/:name/:version</code></a></td>
-            <td scope="row" data-label="Description">Export a SurrealML model from a specific Namespace and Database</td>
-        </tr>
-        <tr>
             <td scope="row" data-label="Function"><a href="#custom"><code>/api/:namespace/:database/:endpoint</code></a></td>
             <td scope="row" data-label="Description">Create a custom API endpoint for any number of HTTP methods (GET, POST, etc.)</td>
+        </tr>
+        <tr>
+            <td scope="row" data-label="Function"><a href="#bucket"><code>/ns/:namespace/db/:database/bucket/:bucket</code></a></td>
+            <td scope="row" data-label="Description">Reads, writes, copies, renames, deletes and lists the files in a bucket, with a session or a presigned URL</td>
         </tr>
     </tbody>
 </table>
@@ -236,6 +232,103 @@ The rules for the cookie are as follows:
 > [!NOTE]
 > The `surreal_token` and `surreal_refresh` cookies are removed from `$request.headers` in a [`DEFINE API`](/docs/reference/query-language/statements/define/api.md) handler. Other cookies in the request stay.
 
+## Scoped URLs {#scoped-urls}
+
+_(since v4.0.0)_
+
+The namespace, database and access method can be part of the URL path, in place of the `Surreal-NS` and `Surreal-DB` headers and the `ns`, `db` and `ac` fields of a signin or signup body. The request from [Authentication](#authentication) becomes:
+
+```bash
+curl -X POST -u "clerk:hunter123" \
+  -H "Surreal-Auth-NS: shop" -H "Surreal-Auth-DB: orders" \
+  -H "Accept: application/json" \
+  -d "SELECT * FROM item;" \
+  http://localhost:8000/ns/shop/db/orders/sql
+```
+
+> [!NOTE]
+> SurrealDB 4.x introduces a new, streamlined URL structure, which gives smoother and more predictable URLs and is the basis for upcoming functionality. The unscoped routes, headers and body fields stay supported.
+
+A scope goes in front of the endpoint path, and `ac` can follow any level, because an access method can be defined on the root, a namespace or a database:
+
+```text
+/ns/{ns}/{endpoint}
+/ns/{ns}/db/{db}/{endpoint}
+/ac/{ac}/{endpoint}
+/ns/{ns}/ac/{ac}/{endpoint}
+/ns/{ns}/db/{db}/ac/{ac}/{endpoint}
+```
+
+For example:
+
+```text
+POST /ns/shop/db/orders/sql
+GET  /ns/shop/db/orders/rpc                  (WebSocket upgrade)
+GET  /ns/shop/db/orders/key/person/tobie
+ANY  /ns/shop/db/orders/api/orders/42
+POST /ns/shop/db/orders/signin               (database user)
+POST /ns/shop/db/orders/ac/users/signup      (record access method)
+POST /ac/admins/signin                       (root access method)
+```
+
+Each segment is percent-decoded once, so the namespace `a/b` is sent as `/ns/a%2Fb/...`. An empty or malformed segment answers `404`.
+
+### Endpoints that take a scope
+
+| Endpoint | `ns` and `db` | `ac` |
+| --- | --- | --- |
+| `/sql`, `/rpc`, `/import`, `/export`, `/key`, `/ml`, `/gql`, `/graphql`, `/mcp`, `/api`, `/bucket` | Yes | No |
+| `/signin`, `/signup`, `/signin/cookie`, `/signup/cookie` | Yes | Yes |
+| `/signout`, `/refresh/cookie`, `/health`, `/status`, `/ready`, `/version`, `/kvexport` | No | No |
+
+An endpoint under a scope it does not take answers `404`, rather than ignoring the scope. `/signout` and `/refresh/cookie` act on a credential the request already carries, which names its own namespace, database and access method.
+
+The scoped form of a [custom endpoint](#custom) is `/ns/{ns}/db/{db}/api/{endpoint}`, which reaches the same handler as `/api/{ns}/{db}/{endpoint}`. A scoped `/api` path without a database answers `404`.
+
+### Headers and credentials under a scope
+
+The path and the other sources have to agree. The path never overrides a header, and a header never overrides the path:
+
+| Path | Other source | Result |
+| --- | --- | --- |
+| `/ns/shop` | `Surreal-NS: shop` | Accepted |
+| `/ns/shop` | `Surreal-NS: other` | `400` |
+| `/ns/shop` | `Surreal-DB: orders` | Namespace `shop`, database `orders` |
+| `/ns/shop/db/orders` | Token for a user on `shop`/`orders` | Accepted |
+| `/ns/shop/db/orders` | Token for a user on `shop`/`other` | `401` |
+| `/ns/shop` | Basic authentication as a user on namespace `other` | `401` |
+| `/ns/shop` | Root credentials | Namespace `shop` |
+
+### The scope is the starting selection
+
+The namespace and database in the path are where a request or connection starts, in the same way as the `Surreal-NS` and `Surreal-DB` headers. The server checks them once, when it authenticates the request or the connection, and the credentials must belong to that namespace and database. After that, the session can change its selection as it can on an unscoped URL:
+
+- A SurrealQL `USE`, or an RPC [`use`](/docs/reference/rest-api/rpc-protocol.md#use), can select another namespace or database, if the user has permission there.
+- An RPC [`signin`](/docs/reference/rest-api/rpc-protocol.md#signin) or `signup` can name another namespace or database in its credentials.
+- An RPC [`reset`](/docs/reference/rest-api/rpc-protocol.md#reset) returns the session to no namespace and no database.
+
+```bash
+curl -X POST -u "root:secret" -H "Accept: application/json" \
+  -d "RETURN session::db(); USE DB archive; RETURN session::db();" \
+  http://localhost:8000/ns/shop/db/orders/sql
+```
+
+The first statement returns `"orders"`, and the last returns `"archive"`.
+
+### Signing in under a scope
+
+[`/signin`](#signin) and [`/signup`](#signup) complete their body from the path. The following request signs in with `{"ns": "shop", "db": "orders", "ac": "users", "email": "tobie@example.com", "pass": "secret"}`:
+
+```bash
+curl -X POST -H "Accept: application/json" \
+  -d '{"email":"tobie@example.com","pass":"secret"}' \
+  http://localhost:8000/ns/shop/db/orders/ac/users/signin
+```
+
+The path fixes the level the credentials act at. A body field that repeats the path is accepted. A body field that names something else answers `400`, and so does a namespace or database the path leaves out: `/ac/admins/signin` always signs in with a root access method, and `/ns/shop/signin` always signs in at the namespace level. Without `ac` in the path, the body can name an access method at the path's level.
+
+Scoped and unscoped signin requests from one client draw on the same [authentication rate limit](/docs/reference/cli/db/environment-variables.md#authentication-rate-limiting-environment-variables).
+
 ## Request size limits
 
 Each endpoint caps the size of the request body it will accept. A request over the cap is rejected with `413 Payload Too Large`. The limits differ per endpoint because they are sized to the work each one does: `/sql` takes a query, `/import` takes a data file.
@@ -253,8 +346,8 @@ The defaults are the same in 2.x and 3.x:
 | `POST /signin` | 1 KiB | `SURREAL_HTTP_MAX_SIGNIN_BODY_SIZE` |
 | `POST /signup` | 1 KiB | `SURREAL_HTTP_MAX_SIGNUP_BODY_SIZE` |
 | `POST /import` | 4 GiB | `SURREAL_HTTP_MAX_IMPORT_BODY_SIZE` |
-| `POST /ml/import` | 4 GiB | `SURREAL_HTTP_MAX_ML_BODY_SIZE` |
 | `POST /mcp` _(since v3.1.0)_ | 4 MiB | `SURREAL_HTTP_MAX_MCP_BODY_SIZE` |
+| `PUT /ns/:namespace/db/:database/bucket/:bucket/:key` _(since v4.0.0)_ | 5 GiB | `SURREAL_HTTP_MAX_BUCKET_BODY_SIZE` |
 
 The WebSocket `/rpc` endpoint is not bound by an HTTP body size. It allows up to 128 MiB per message (`SURREAL_WEBSOCKET_MAX_MESSAGE_SIZE`). As most SDKs use the WebSocket engine by default, they are able to send payloads that the plain HTTP endpoints reject. See [Message size limits](/docs/reference/rest-api/rpc-protocol.md#message-size-limits) for how the server ceiling interacts with the limit an SDK applies on its own side.
 
@@ -954,6 +1047,16 @@ curl -X POST -H "Accept: application/json" -d '{"ns":"main","user":"johndoe","pa
 	"details": "Authentication succeeded",
 	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 }
+```
+
+### Example with a scoped URL
+
+_(since v4.0.0)_
+
+The namespace, database and access method can be part of the path instead of the body. See [Scoped URLs](#scoped-urls).
+
+```bash title="Request"
+curl -X POST -H "Accept: application/json" -d '{"user":"johndoe","pass":"123456"}' http://localhost:8000/ns/main/db/main/ac/users/signin
 ```
 
 ### Example usage via postman
@@ -2414,140 +2517,9 @@ curl -X POST \
 
 <br />
 
-## `POST /ml/import` {#ml-import}
-
-This HTTP RESTful endpoint imports a SurrealML machine learning model into a specific Namespace and Database. It expects the file to be a SurrealML file packaged in the `.surml` file format. As machine learning files can be large, the endpoint expects a chunked HTTP request.
-
-### Headers
-
-<table>
-    <thead>
-        <tr>
-            <th colspan="2">Header</th>
-            <th colspan="2">Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td colspan="2" scope="row" data-label="Header">
-                <code>Authorization</code>
-                <label label="optional">OPTIONAL</label>
-            </td>
-            <td colspan="2" scope="row" data-label="Description">
-            Sets the root, namespace, database, or record authentication data
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" scope="row" data-label="Header">
-                <code>Surreal-NS</code>
-                <label label="required" />
-            </td>
-            <td colspan="2" scope="row" data-label="Description">
-                Sets the selected Namespace for queries.
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" scope="row" data-label="Header">
-                <code>Surreal-DB</code>
-                <label label="required" />
-            </td>
-            <td colspan="2" scope="row" data-label="Description">
-                Sets the selected Database for queries.
-            </td>
-        </tr>
-    </tbody>
-</table>
-
-### Example usage
-
-> [!NOTE]
-> The `-u` in the example below is a shorthand used by curl to send an Authorization header (name and password), in this case assuming the username `root` and password `secret`.
-
-```bash title="Request"
-curl -X POST \
-  -u "root:secret" \
-  -H "Surreal-NS: main" \
-  -H "Surreal-DB: main" \
-  -H "Accept: application/json" \
-  -d file.surml \
-  http://localhost:8000/ml/import
-```
-
-### Usage in Python
-
-When using Python, the [surreaml](https://github.com/surrealdb/surrealml) package can be used to upload the model with the following code:
-
-```python
-from surrealml import SurMlFile
-
-url = "http://0.0.0.0:8000/ml/import"
-SurMlFile.upload("./linear_test.surml", url, 5)
-```
-
-<br />
-
-## `GET /ml/export/:name/:version` {#ml-export}
-
-This HTTP RESTful endpoint exports a SurrealML machine learning model from a specific Namespace and Database. The output file will be a SurrealML file packaged in the `.surml` file format. As machine learning files can be large, the endpoint outputs a chunked HTTP response.
-
-### Headers
-
-<table>
-    <thead>
-        <tr>
-            <th colspan="2">Header</th>
-            <th colspan="2">Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td colspan="2" scope="row" data-label="Header">
-                <code>Authorization</code>
-                <label label="optional">OPTIONAL</label>
-            </td>
-            <td colspan="2" scope="row" data-label="Description">
-                Sets the root, namespace, or database authentication data
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" scope="row" data-label="Header">
-                <code>Surreal-NS</code>
-                <label label="required" />
-            </td>
-            <td colspan="2" scope="row" data-label="Description">
-                Sets the selected Namespace for queries.
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" scope="row" data-label="Header">
-                <code>Surreal-DB</code>
-                <label label="required" />
-            </td>
-            <td colspan="2" scope="row" data-label="Description">
-                Sets the selected Database for queries.
-            </td>
-        </tr>
-    </tbody>
-</table>
-
-### Example usage
-
-> [!NOTE]
-> The `-u` in the example below is a shorthand used by curl to send an Authorization header (name and password), in this case assuming the username `root` and password `secret`. The `-o` allows the output to be written to a file.
-
-```bash title="Request"
-curl -X GET \
-  -u "root:secret" \
-  -H "Surreal-NS: main" \
-  -H "Surreal-DB: main" \
-  -H "Accept: application/json" \
-  -o file.surml \
-  http://localhost:8000/ml/export/prediction/1.0.0
-```
-
 ## Custom endpoint at `/api/:ns/:db/:endpoint` {#custom}
 
-A custom endpoint can be set using a [`DEFINE API`](/docs/reference/query-language/statements/define/api.md) statement. The possible HTTP methods (GET, PUT, etc.) are set using the statement itself. The path begins with `/api`, continues with the namespace and database, and ends with a custom endpoint that can include both static and dynamic path segments.
+A custom endpoint can be set using a [`DEFINE API`](/docs/reference/query-language/statements/define/api.md) statement. The possible HTTP methods (GET, PUT, etc.) are set using the statement itself. The path begins with `/api`, continues with the namespace and database, and ends with a custom endpoint that can include both static and dynamic path segments. From SurrealDB 4.0, the same handler is also reached at the [scoped URL](#scoped-urls) `/ns/:ns/db/:db/api/:endpoint`.
 
 ### Headers
 
@@ -2611,4 +2583,125 @@ curl http://localhost:8000/api/main/main/custom_response -H "Surreal-NS: ns" -H 
 
 ```json title="Response"
 {"some":"info"}
+```
+
+## Buckets at `/bucket/:bucket` {#bucket}
+
+_(since v4.0.0)_
+
+The `/bucket` route reads and writes the files in a [bucket](/docs/reference/query-language/statements/define/bucket.md) over plain HTTP. Each method does the same work as one of the [file functions](/docs/reference/query-language/functions/database-functions/file.md), and the bucket's `PERMISSIONS` clause decides each request as it decides the function.
+
+| Method and path | Function | Success status |
+| --- | --- | --- |
+| `GET /bucket/:bucket/` | `file::list` | `200` |
+| `GET /bucket/:bucket/:key` | `file::get` | `200`, or `206` for a range |
+| `HEAD /bucket/:bucket/:key` | `file::head` | `200` |
+| `PUT /bucket/:bucket/:key` | `file::put` | `201` |
+| `DELETE /bucket/:bucket/:key` | `file::delete` | `204` |
+| `POST /bucket/:bucket/:key` | `file::copy` or `file::rename` | `201` |
+
+A bucket is defined on the root, on a namespace or on a database, and the [scope](#scoped-urls) in front of `/bucket` names which one:
+
+```text
+/bucket/:bucket/:key                               a bucket on the root
+/ns/:namespace/bucket/:bucket/:key                 a bucket on a namespace
+/ns/:namespace/db/:database/bucket/:bucket/:key    a bucket on a database
+```
+
+The level comes from the path only, so that a URL is complete without any headers, and the `Surreal-NS` and `Surreal-DB` headers never move a request to another level. The key is the rest of the path, so `/ns/main/db/main/bucket/images/u/avatar.png` is the file `f"images:/u/avatar.png"` in the database `main`. The route is not compatible with the Amazon S3 API.
+
+### Authentication
+
+A request is authenticated in one of three ways:
+
+* **A session**, with an `Authorization` header holding a user's credentials (`Basic`) or a token (`Bearer`), as on the other endpoints. A user reaches a bucket at its own level or below: a root user any bucket, a namespace user the buckets of its namespace and of its databases, and a database or record user the buckets of its database.
+* **A presigned URL** from [`file::presign_get`](/docs/reference/query-language/functions/database-functions/file.md#filepresign_get) or [`file::presign_put`](/docs/reference/query-language/functions/database-functions/file.md#filepresign_put). The signature in the query string is the credential, and the bucket's `PERMISSIONS` clause was already checked when the URL was made. A `GET` URL also accepts `HEAD`, and a `PUT` URL accepts only `PUT`. When a request has both a signature and a session, the signature is used.
+* **No credentials.** The request is a guest, and is allowed only when the server runs with [`--allow-guests`](/docs/reference/cli/db/commands/start.md). A guest is then judged by the bucket's `PERMISSIONS` clause, so a bucket with `PERMISSIONS FULL` is readable by anyone on a server that allows guests.
+
+Guests and record users cannot list a bucket, in the same way that they cannot call `file::list`. The route can be turned off with `--deny-http bucket`. See [HTTP routes and RPC methods](/docs/learn/security/authorization/capabilities.md#http-routes-and-rpc-methods).
+
+### Reading a file
+
+`GET` returns the bytes of the file, with these response headers:
+
+* `Content-Type`: the type stored with the file, or `application/octet-stream` when it has none. The server never guesses a type from the key.
+* `ETag` and `Last-Modified`, from the same metadata as `file::head`.
+* `Accept-Ranges: bytes`. A `Range` header with one range, such as `bytes=0-1023`, returns that part with `206 Partial Content`, so a `<video>` element can seek. A range past the end of the file returns `416`.
+* `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`. A user who can upload a file chooses its type, so these headers stop a stored HTML or SVG file from running scripts on the database's origin.
+
+A request with `If-None-Match` and the file's current `ETag` returns `304 Not Modified` without the body. `HEAD` returns the same headers as `GET` and no body.
+
+### Writing a file
+
+`PUT` stores the request body at the key and answers `201 Created`. The `Content-Type` header is stored with the file, as the `content_type` option of `file::put` does. No header, or `application/octet-stream`, stores no type. A `file:` bucket cannot store a type, and answers `415 Unsupported Media Type` for any other value.
+
+With `If-None-Match: *`, the write never replaces a file, and answers `412 Precondition Failed` when the key already holds one. The body is limited by `SURREAL_HTTP_MAX_BUCKET_BODY_SIZE`, which defaults to 5 GiB, and by the `max_size` of a presigned URL. A larger body answers `413 Payload Too Large`, and no file is left at the key.
+
+### Copying and renaming a file
+
+`POST` copies or renames the file at the key. The body is a JSON or CBOR object, sent with the matching `Content-Type`:
+
+```json
+{ "action": "copy", "target": "/archive/avatar.png", "overwrite": false }
+```
+
+`action` is `copy` or `rename`, and `target` is a key in the same bucket. `overwrite` defaults to `true`. With `false`, the request answers `412` when the target key holds a file. A missing source file answers `404`. A presigned URL cannot copy or rename.
+
+### Listing a bucket
+
+`GET` on the bucket itself, with or without a trailing `/`, lists it. The query parameters `prefix`, `delimiter`, `start` and `limit` work as the options of [`file::list`](/docs/reference/query-language/functions/database-functions/file.md#filelist). The response is JSON, or CBOR when the `Accept` header asks for `application/cbor`. Another format answers `406 Not Acceptable`, and an `Accept` value that the server cannot read answers `400`.
+
+Each entry is `{ key, size, updated, etag }` for a file, with `key` as a plain string, or `{ prefix }` for a folder when `delimiter=/` is set.
+
+### Status codes
+
+| Status | Meaning |
+| --- | --- |
+| `400` | A malformed header, query parameter or `POST` body. |
+| `401` | A presigned URL with a query string that the server cannot read, such as an unknown or repeated parameter. |
+| `403` | The credentials do not allow the request: the bucket's `PERMISSIONS` clause refuses it, a presigned URL was changed or was revoked, an upload sends a `Content-Type` other than the one its presigned URL allows, or a request has no credentials on a server that does not allow guests. |
+| `404` | No file at the key, or no source file for a copy or rename. |
+| `406` | A listing with an `Accept` header for a format other than JSON or CBOR. |
+| `410` | A presigned URL that has expired. Create a new one. |
+| `412` | The key holds a file and the request asked not to replace it. |
+| `413` | The body is larger than the presigned URL or the server allows. |
+| `415` | A content type that the backend cannot store, or a `POST` body that is not JSON or CBOR. |
+| `416` | A range that starts past the end of the file. |
+
+### Example usage
+
+The commands below start a server with a signing secret for presigned URLs, define a bucket, upload a file with a session, and then download it through a presigned URL.
+
+```bash
+SURREAL_BUCKET_PRESIGN_SECRET="replace-with-a-random-value-of-32-bytes-or-more" \
+  surreal start --user root --pass secret
+```
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" \
+  -d 'DEFINE BUCKET images BACKEND "memory"' http://localhost:8000/sql
+
+curl -X PUT -u "root:secret" -H "Content-Type: image/png" \
+  --data-binary @avatar.png http://localhost:8000/ns/main/db/main/bucket/images/u/avatar.png
+```
+
+A query creates the presigned URL, and any HTTP client can use its `path` without credentials until it expires:
+
+```bash
+curl -X POST -u "root:secret" -H "Surreal-NS: main" -H "Surreal-DB: main" -H "Accept: application/json" \
+  -d 'file::presign_get(f"images:/u/avatar.png", { expires: 5m }).path' http://localhost:8000/sql
+
+curl -i "http://localhost:8000/ns/main/db/main/bucket/images/u/avatar.png?exp=1793747188&sig=..."
+```
+
+```text title="Response"
+HTTP/1.1 200 OK
+accept-ranges: bytes
+last-modified: Tue, 03 Nov 2026 23:01:28 GMT
+x-content-type-options: nosniff
+content-security-policy: sandbox
+etag: "0"
+content-type: image/png
+content-length: 18
+...
 ```
