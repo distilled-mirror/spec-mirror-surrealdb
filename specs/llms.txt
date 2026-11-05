@@ -19,9 +19,9 @@ Working notes:
 - [SDKs](https://surrealdb.com/docs/languages): One official SurrealDB SDK per language.
 - [What is SurrealDB](https://surrealdb.com/docs/what-is-surrealdb): SurrealDB is a multi-model database written in Rust.
 - [Claude Code](https://surrealdb.com/docs/agents/claude-code): Hosted MCP server and Agent Skills setup for Claude Code.
-- [Codex](https://surrealdb.com/docs/agents/codex): Hosted MCP server and Agent Skills setup for the Codex CLI.
-- [Cursor](https://surrealdb.com/docs/agents/cursor): Hosted MCP server and Agent Skills setup for Cursor.
-- [GitHub Copilot](https://surrealdb.com/docs/agents/github-copilot): Hosted MCP server and Agent Skills setup for GitHub Copilot.
+- [Codex](https://surrealdb.com/docs/agents/codex)
+- [Cursor](https://surrealdb.com/docs/agents/cursor)
+- [GitHub Copilot](https://surrealdb.com/docs/agents/github-copilot)
 - [Visual Studio Code](https://surrealdb.com/docs/agents/vscode)
 - [Windsurf](https://surrealdb.com/docs/agents/windsurf)
 - [Zed](https://surrealdb.com/docs/agents/zed)
@@ -185,7 +185,7 @@ Working notes:
 - [Golang](https://surrealdb.com/docs/build/embedding/by-language/golang)
 - [JavaScript](https://surrealdb.com/docs/build/embedding/by-language/javascript)
 - [Python](https://surrealdb.com/docs/build/embedding/by-language/python)
-- [Rust](https://surrealdb.com/docs/build/embedding/by-language/rust)
+- [Rust](https://surrealdb.com/docs/build/embedding/by-language/rust): Embedding SurrealDB in Rust
 - [Agno](https://surrealdb.com/docs/build/integrations/ai-frameworks/agno)
 - [CAMEL](https://surrealdb.com/docs/build/integrations/ai-frameworks/camel)
 - [CocoIndex](https://surrealdb.com/docs/build/integrations/ai-frameworks/cocoindex)
@@ -242,7 +242,7 @@ Working notes:
 
 - [Manage](https://surrealdb.com/docs/manage): Running SurrealDB in production: managed instances and organisations.
 - [Enterprises](https://surrealdb.com/docs/manage/enterprise)
-- [Instances](https://surrealdb.com/docs/manage/instances): What a SurrealDB Cloud instance is.
+- [Instances](https://surrealdb.com/docs/manage/instances)
 - [Observability](https://surrealdb.com/docs/manage/observability)
 - [Organisations](https://surrealdb.com/docs/manage/organisations)
 - [SurrealKit schema migration](https://surrealdb.com/docs/manage/schema-migration)
@@ -508,6 +508,7 @@ Working notes:
 - [Invoking APIs](https://surrealdb.com/docs/reference/javascript/concepts/invoking-apis)
 - [Live queries](https://surrealdb.com/docs/reference/javascript/concepts/live-queries)
 - [Multiple sessions](https://surrealdb.com/docs/reference/javascript/concepts/multiple-sessions)
+- [Tracing queries](https://surrealdb.com/docs/reference/javascript/concepts/tracing-queries)
 - [Transactions](https://surrealdb.com/docs/reference/javascript/concepts/transactions)
 - [Utilities](https://surrealdb.com/docs/reference/javascript/concepts/utilities)
 - [Validating calls](https://surrealdb.com/docs/reference/javascript/concepts/validating-calls)
@@ -769,6 +770,7 @@ Working notes:
 - [UpdatePromise](https://surrealdb.com/docs/reference/javascript/api/queries/update-promise)
 - [UpsertPromise](https://surrealdb.com/docs/reference/javascript/api/queries/upsert-promise)
 - [BoundQuery](https://surrealdb.com/docs/reference/javascript/api/utilities/bound-query)
+- [dedupeTrace](https://surrealdb.com/docs/reference/javascript/api/utilities/dedupe-trace)
 - [equals](https://surrealdb.com/docs/reference/javascript/api/utilities/equals)
 - [Escape functions](https://surrealdb.com/docs/reference/javascript/api/utilities/escape)
 - [expr](https://surrealdb.com/docs/reference/javascript/api/utilities/expr)
