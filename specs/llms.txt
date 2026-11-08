@@ -16,7 +16,7 @@ Working notes:
 
 - [Getting started](https://surrealdb.com/docs)
 - [Agent setup](https://surrealdb.com/docs/agents)
-- [SDKs](https://surrealdb.com/docs/languages): One official SurrealDB SDK per language.
+- [SDKs](https://surrealdb.com/docs/languages)
 - [What is SurrealDB](https://surrealdb.com/docs/what-is-surrealdb)
 - [Claude Code](https://surrealdb.com/docs/agents/claude-code)
 - [Codex](https://surrealdb.com/docs/agents/codex)
@@ -96,10 +96,10 @@ Working notes:
 - [Vector indexes](https://surrealdb.com/docs/learn/data-models/vector-search/vector-indexes)
 - [Creating custom extensions](https://surrealdb.com/docs/learn/extensions/guides/creating-custom-extensions)
 - [Extension architecture](https://surrealdb.com/docs/learn/extensions/guides/extension-architecture)
-- [Surrealism attribute reference](https://surrealdb.com/docs/learn/extensions/guides/surrealism-attribute-reference)
-- [Using WASM plugins](https://surrealdb.com/docs/learn/extensions/guides/using-wasm-plugins)
+- [Extension attribute reference](https://surrealdb.com/docs/learn/extensions/guides/extension-attribute-reference)
+- [Using SurrealDB extensions](https://surrealdb.com/docs/learn/extensions/guides/using-surrealdb-extensions)
 - [Further examples](https://surrealdb.com/docs/learn/extensions/plugins/further-examples)
-- [Surrealism plugins](https://surrealdb.com/docs/learn/extensions/plugins/overview): Compile Rust into Surrealism extensions, WebAssembly archives whose...
+- [SurrealDB extensions](https://surrealdb.com/docs/learn/extensions/plugins/overview): Compile Rust into SurrealDB extensions, WebAssembly archives whose...
 - [Quick tutorial](https://surrealdb.com/docs/learn/extensions/plugins/quick-tutorial)
 - [Bulk operations and data import](https://surrealdb.com/docs/learn/querying/concepts-and-guides/bulk-operations-and-data-import)
 - [Connecting from serverless & edge](https://surrealdb.com/docs/learn/querying/concepts-and-guides/connecting-from-serverless-and-edge)
@@ -159,7 +159,7 @@ Working notes:
 - [Tokens & JWTs](https://surrealdb.com/docs/learn/security/authorization/tokens-and-jwts)
 - [Security best practices](https://surrealdb.com/docs/learn/security/best-practices/security-best-practices)
 - [Troubleshooting](https://surrealdb.com/docs/learn/security/best-practices/troubleshooting)
-- [Via CLI](https://surrealdb.com/docs/learn/querying/surrealql/executing-queries/via-cli)
+- [Via CLI](https://surrealdb.com/docs/learn/querying/surrealql/executing-queries/via-cli): Run SurrealQL from the terminal with surreal db sql.
 - [Via HTTP](https://surrealdb.com/docs/learn/querying/surrealql/executing-queries/via-http)
 - [Via SDKs](https://surrealdb.com/docs/learn/querying/surrealql/executing-queries/via-sdks)
 - [Via SurrealDB Studio](https://surrealdb.com/docs/learn/querying/surrealql/executing-queries/via-studio)
@@ -331,7 +331,6 @@ Working notes:
 - [Explore](https://surrealdb.com/docs/explore)
 - [SurrealDB Labs](https://surrealdb.com/docs/labs)
 - [SurrealDB CLI](https://surrealdb.com/docs/explore/cli)
-- [Introduction](https://surrealdb.com/docs/explore/ml-models)
 - [Introduction](https://surrealdb.com/docs/explore/studio)
 - [Demos and tutorials](https://surrealdb.com/docs/explore/tutorials)
 - [Managing SurrealDB Cloud](https://surrealdb.com/docs/explore/cli/cloud)
@@ -345,8 +344,6 @@ Working notes:
 - [Instances with surreal cloud](https://surrealdb.com/docs/explore/cli/cloud/instances)
 - [Organisations with surreal cloud](https://surrealdb.com/docs/explore/cli/cloud/organisations)
 - [Scripting surreal cloud](https://surrealdb.com/docs/explore/cli/cloud/scripting)
-- [Computation](https://surrealdb.com/docs/explore/ml-models/surrealml/computation)
-- [Storage](https://surrealdb.com/docs/explore/ml-models/surrealml/storage)
 - [Kai G AI demos](https://surrealdb.com/docs/explore/tutorials/demos/kaig-ai-demos)
 - [Demos](https://surrealdb.com/docs/explore/tutorials/demos/overview)
 - [Surreal Deal Store](https://surrealdb.com/docs/explore/tutorials/demos/surreal-deal-store)
@@ -422,7 +419,7 @@ Working notes:
 - [surreal cloud long-running operations](https://surrealdb.com/docs/reference/cli/cloud/long-running-operations)
 - [surreal cloud output and exit codes](https://surrealdb.com/docs/reference/cli/cloud/output-and-exit-codes)
 - [surreal db commands](https://surrealdb.com/docs/reference/cli/db/commands)
-- [Environment variables](https://surrealdb.com/docs/reference/cli/db/environment-variables)
+- [Environment variables](https://surrealdb.com/docs/reference/cli/db/environment-variables): Every SURREAL_ variable, with its default and allowed values.
 - [Environment variables and flags by version](https://surrealdb.com/docs/reference/cli/db/version-history)
 - [SurrealQL formatter](https://surrealdb.com/docs/reference/cli/formatter/overview)
 - [Handle authentication](https://surrealdb.com/docs/reference/dotnet/core/authentication)
@@ -642,7 +639,7 @@ Working notes:
 - [RELATE](https://surrealdb.com/docs/reference/query-language/statements/relate)
 - [REMOVE](https://surrealdb.com/docs/reference/query-language/statements/remove)
 - [RETURN](https://surrealdb.com/docs/reference/query-language/statements/return)
-- [SELECT](https://surrealdb.com/docs/reference/query-language/statements/select)
+- [SELECT](https://surrealdb.com/docs/reference/query-language/statements/select): Select and query records, with FROM, WHERE, GROUP, ORDER and LIMIT.
 - [SHOW](https://surrealdb.com/docs/reference/query-language/statements/show)
 - [SLEEP](https://surrealdb.com/docs/reference/query-language/statements/sleep)
 - [THROW](https://surrealdb.com/docs/reference/query-language/statements/throw)
@@ -730,8 +727,8 @@ Working notes:
 - [import](https://surrealdb.com/docs/reference/cli/db/commands/import)
 - [isready](https://surrealdb.com/docs/reference/cli/db/commands/isready)
 - [mcp](https://surrealdb.com/docs/reference/cli/db/commands/mcp)
-- [sql](https://surrealdb.com/docs/reference/cli/db/commands/sql)
-- [start](https://surrealdb.com/docs/reference/cli/db/commands/start)
+- [sql](https://surrealdb.com/docs/reference/cli/db/commands/sql): Open a SurrealQL REPL, or pipe queries in from a script.
+- [start](https://surrealdb.com/docs/reference/cli/db/commands/start): Run a server in memory, on disk, or as a node in a cluster.
 - [surreal upgrade db](https://surrealdb.com/docs/reference/cli/db/commands/upgrade)
 - [validate](https://surrealdb.com/docs/reference/cli/db/commands/validate)
 - [version](https://surrealdb.com/docs/reference/cli/db/commands/version)
@@ -898,7 +895,6 @@ Working notes:
 - [Type](https://surrealdb.com/docs/reference/query-language/functions/database-functions/type)
 - [Value](https://surrealdb.com/docs/reference/query-language/functions/database-functions/value)
 - [Vector](https://surrealdb.com/docs/reference/query-language/functions/database-functions/vector)
-- [ML functions](https://surrealdb.com/docs/reference/query-language/functions/ml-functions/functions)
 - [Arrays](https://surrealdb.com/docs/reference/query-language/language-primitives/data-types/arrays)
 - [Booleans](https://surrealdb.com/docs/reference/query-language/language-primitives/data-types/booleans)
 - [Bytes](https://surrealdb.com/docs/reference/query-language/language-primitives/data-types/bytes)
@@ -1008,7 +1004,7 @@ Working notes:
 
 ## Agent Memory
 
-- [Agent Memory](https://surrealdb.com/docs/agent-memory)
+- [Agent Memory](https://surrealdb.com/docs/agent-memory): Memory and knowledge for AI agents on SurrealDB.
 - [Cookbooks](https://surrealdb.com/docs/agent-memory/cookbooks)
 - [Agent Memory Enterprise](https://surrealdb.com/docs/agent-memory/enterprise)
 - [Agent Memory integrations](https://surrealdb.com/docs/agent-memory/integrations)
