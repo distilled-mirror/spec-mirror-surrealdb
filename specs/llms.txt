@@ -285,6 +285,7 @@ Working notes:
 - [Support plans and raising a ticket](https://surrealdb.com/docs/manage/organisations/support)
 - [Configuration](https://surrealdb.com/docs/manage/schema-migration/configuration)
 - [embed_schema! macro](https://surrealdb.com/docs/manage/schema-migration/embed-schema-macro)
+- [Migrating existing records](https://surrealdb.com/docs/manage/schema-migration/existing-records)
 - [Using SurrealKit as a library](https://surrealdb.com/docs/manage/schema-migration/library)
 - [Schema modules and targets](https://surrealdb.com/docs/manage/schema-migration/modules-and-targets)
 - [Rollouts](https://surrealdb.com/docs/manage/schema-migration/rollouts)
@@ -728,7 +729,7 @@ Working notes:
 - [isready](https://surrealdb.com/docs/reference/cli/db/commands/isready)
 - [mcp](https://surrealdb.com/docs/reference/cli/db/commands/mcp)
 - [sql](https://surrealdb.com/docs/reference/cli/db/commands/sql): Open a SurrealQL REPL, or pipe queries in from a script.
-- [start](https://surrealdb.com/docs/reference/cli/db/commands/start): Run a server in memory, on disk, or as a node in a cluster.
+- [start](https://surrealdb.com/docs/reference/cli/db/commands/start)
 - [surreal upgrade db](https://surrealdb.com/docs/reference/cli/db/commands/upgrade)
 - [validate](https://surrealdb.com/docs/reference/cli/db/commands/validate)
 - [version](https://surrealdb.com/docs/reference/cli/db/commands/version)
@@ -1004,7 +1005,7 @@ Working notes:
 
 ## Agent Memory
 
-- [Agent Memory](https://surrealdb.com/docs/agent-memory): Memory and knowledge for AI agents on SurrealDB.
+- [Agent Memory](https://surrealdb.com/docs/agent-memory)
 - [Cookbooks](https://surrealdb.com/docs/agent-memory/cookbooks)
 - [Agent Memory Enterprise](https://surrealdb.com/docs/agent-memory/enterprise)
 - [Agent Memory integrations](https://surrealdb.com/docs/agent-memory/integrations)
