@@ -439,7 +439,7 @@ This HTTP RESTful endpoint checks whether the database web server is running, re
 curl -I http://localhost:8000/status
 ```
 
-```bash title="Sample output"
+```bash title="Example output"
 HTTP/1.1 200 OK
 vary: origin, access-control-request-method, access-control-request-headers
 access-control-allow-origin: *
@@ -464,7 +464,7 @@ From SurrealDB 3.3.5, on a server started with [`SURREAL_MEMORY_THRESHOLD`](/doc
 curl -I http://localhost:8000/health
 ```
 
-```bash title="Sample output"
+```bash title="Example output"
 HTTP/1.1 200 OK
 vary: origin, access-control-request-method, access-control-request-headers
 access-control-allow-origin: *
@@ -528,7 +528,7 @@ This HTTP RESTful endpoint returns the version of the SurrealDB database server.
 curl http://localhost:8000/version
 ```
 
-```bash title="Sample output"
+```bash title="Example output"
 surrealdb-4.0.0
 ```
 
@@ -1390,7 +1390,7 @@ This HTTP RESTful endpoint selects all records in a specific table in the databa
 > Without a `limit`, this endpoint returns at most 100 records, even when the table holds more. Use `limit` and `start` to page through a larger table, or [`POST /sql`](#sql) for a query without a limit. A value that is not a number, such as `?limit=abc`, returns `400 Bad Request`.
 
 ### Translated query
-```surql
+```surql notest
 -- Without `fields`
 SELECT * FROM type::table($table) LIMIT $limit START $start;
 -- With `fields`
@@ -1468,7 +1468,7 @@ This HTTP RESTful endpoint creates a record in a specific table in the database.
 </table>
 
 ### Translated query
-```surql
+```surql notest
 CREATE type::table($table) CONTENT $data;
 ```
 
@@ -1553,7 +1553,7 @@ This HTTP RESTful endpoint updates all records in a specific table in the databa
 </table>
 
 ### Translated query
-```surql
+```surql notest
 UPDATE type::table($table) CONTENT $data;
 ```
 
@@ -1646,7 +1646,7 @@ This HTTP RESTful endpoint modifies all records in a specific table in the datab
 </table>
 
 ### Translated query
-```surql
+```surql notest
 UPDATE type::table($table) MERGE $data;
 ```
 
@@ -1736,7 +1736,7 @@ This HTTP RESTful endpoint deletes all records from the specified table in the d
 </table>
 
 ### Translated query
-```surql
+```surql notest
 DELETE FROM type::table($table) RETURN BEFORE;
 ```
 
@@ -1896,7 +1896,7 @@ This HTTP RESTful endpoint creates a specific record in a table in the database.
 
 ### Translated query
 
-```surql
+```surql notest
 CREATE type::record($table, $id) CONTENT $data;
 ```
 
