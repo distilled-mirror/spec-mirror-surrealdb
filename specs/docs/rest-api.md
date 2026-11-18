@@ -1,3 +1,12 @@
+---
+title: "REST API"
+description: "The SurrealDB REST API: executing queries over HTTP. Manage authentication and perform CRUD operations."
+canonical_url: "https://surrealdb.com/docs/reference/rest-api"
+section: "APIs and protocols"
+surrealdb_version: "4.x"
+last_modified: "2026-11-03T16:12:33Z"
+---
+
 > Full SurrealDB documentation index: https://surrealdb.com/docs/llms.txt
 
 # REST API

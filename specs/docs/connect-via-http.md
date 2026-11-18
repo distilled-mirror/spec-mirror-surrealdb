@@ -1,3 +1,12 @@
+---
+title: "Via HTTP"
+description: "Query an instance with cURL or any HTTP client, and the request size limits that apply per endpoint."
+canonical_url: "https://surrealdb.com/docs/operate/instances/connect/via-http"
+section: "Connect"
+surrealdb_version: "4.x"
+last_modified: "2026-11-18T02:09:16Z"
+---
+
 > Full SurrealDB documentation index: https://surrealdb.com/docs/llms.txt
 
 # Via HTTP
@@ -47,6 +56,6 @@ If a payload does not fit, you have three options:
 
 - **Use an SDK.** Most, including [Rust](/docs/reference/rust.md) and [JavaScript](/docs/reference/javascript.md), default to the WebSocket engine and its 128 MiB per message.
 - **Stay on HTTP but change endpoint.** Send the query through [`POST /rpc`](/docs/reference/rest-api/rpc-protocol.md), which accepts 4 MiB.
-- **Load bulk data through import.** [`POST /import`](/docs/reference/rest-api/http-protocol.md#import) accepts up to 4 GiB per request. See [Import and export](/docs/manage/instances/import-and-export.md#size-limits).
+- **Load bulk data through import.** [`POST /import`](/docs/reference/rest-api/http-protocol.md#import) accepts up to 4 GiB per request. See [Import and export](/docs/operate/instances/import-and-export.md#size-limits).
 
 The full table is in [request size limits](/docs/reference/rest-api/http-protocol.md#request-size-limits). A self-hosted server sets these caps with environment variables. Instances run the defaults.
