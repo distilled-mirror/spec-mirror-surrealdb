@@ -4,7 +4,7 @@ description: "Query an instance with cURL or any HTTP client, and the request si
 canonical_url: "https://surrealdb.com/docs/operate/instances/connect/via-http"
 section: "Connect"
 surrealdb_version: "4.x"
-last_modified: "2026-11-18T02:09:16Z"
+last_modified: "2026-11-19T06:06:22Z"
 ---
 
 > Full SurrealDB documentation index: https://surrealdb.com/docs/llms.txt
@@ -13,7 +13,7 @@ last_modified: "2026-11-18T02:09:16Z"
 
 Query an instance with cURL or any HTTP client, and the request size limits that apply per endpoint.
 
-Instances serve the [HTTP API](/docs/reference/rest-api.md), so anything that speaks HTTP can query them.
+Instances serve the [HTTP API](/docs/reference/protocols.md), so anything that speaks HTTP can query them.
 
 That includes cURL, Postman, a serverless function, and a language without an SDK.
 
@@ -55,7 +55,7 @@ A request over the cap is rejected with `413 Payload Too Large`. The 1 MiB cap o
 If a payload does not fit, you have three options:
 
 - **Use an SDK.** Most, including [Rust](/docs/reference/rust.md) and [JavaScript](/docs/reference/javascript.md), default to the WebSocket engine and its 128 MiB per message.
-- **Stay on HTTP but change endpoint.** Send the query through [`POST /rpc`](/docs/reference/rest-api/rpc-protocol.md), which accepts 4 MiB.
-- **Load bulk data through import.** [`POST /import`](/docs/reference/rest-api/http-protocol.md#import) accepts up to 4 GiB per request. See [Import and export](/docs/operate/instances/import-and-export.md#size-limits).
+- **Stay on HTTP but change endpoint.** Send the query through [`POST /rpc`](/docs/reference/protocols/rpc-protocol.md), which accepts 4 MiB.
+- **Load bulk data through import.** [`POST /import`](/docs/reference/protocols/http-protocol.md#import) accepts up to 4 GiB per request. See [Import and export](/docs/operate/instances/import-and-export.md#size-limits).
 
-The full table is in [request size limits](/docs/reference/rest-api/http-protocol.md#request-size-limits). A self-hosted server sets these caps with environment variables. Instances run the defaults.
+The full table is in [request size limits](/docs/reference/protocols/http-protocol.md#request-size-limits). A self-hosted server sets these caps with environment variables. Instances run the defaults.
